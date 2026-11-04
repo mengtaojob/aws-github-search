@@ -16,18 +16,25 @@
 
 ## 2. 检查本机工具和身份
 
-本地开发无需这些工具，真实部署需要 AWS CLI v2、SAM CLI；使用跳板机端口转发还需要 Session Manager plugin；运行迁移 SQL 需要 PostgreSQL 的 `psql` 客户端。
+本地开发无需这些工具，真实部署需要 AWS CLI v2、SAM CLI；使用跳板机端口转发还需要 Session Manager plugin。数据库初始化使用项目内的 Node.js 迁移脚本。
 
 ```powershell
 aws --version
 sam --version
 session-manager-plugin --version
-psql --version
 ```
 
 若未配置 AWS CLI，优先用你账号支持的 IAM Identity Center/SSO 登录或 AWS 官方 CLI 登录流程，不需要把任何 Access Key 发给 AI。不要假设浏览器登录 AWS 控制台意味着 CLI 已登录。
 
-已配置 SSO profile 的示例：
+本项目已使用浏览器登录配置 `aws-course`，在后续操作的每个新 PowerShell 窗口中设置：
+
+```powershell
+$env:AWS_PROFILE='aws-course'
+$env:AWS_REGION='ap-southeast-2'
+aws sts get-caller-identity
+```
+
+登录过期后执行 `aws login --profile aws-course`。使用 IAM Identity Center 时采用下面的 SSO 登录方式：
 
 ```powershell
 aws sso login --profile YOUR_PROFILE
@@ -95,21 +102,15 @@ aws ssm start-session --target $bastionId --document-name AWS-StartPortForwardin
 
 此命令持续运行并将本机 15432 转发到 Aurora 5432。SSM 刚启动可能需要等待 EC2 成为 managed instance。
 
-在第二个 PowerShell 窗口中重新完成第 2 节的身份配置与第 4 节的 Outputs 读取，然后执行：
+在第二个 PowerShell 窗口中，进入项目根目录，然后执行：
 
 ```powershell
-$dbCredentials = aws secretsmanager get-secret-value --secret-id $outputs['DatabaseSecretArn'] --region ap-southeast-2 --query SecretString --output text | ConvertFrom-Json
-$env:PGPASSWORD=$dbCredentials.password
-try {
-  psql "host=$dbHost hostaddr=127.0.0.1 port=15432 dbname=github_search user=$($dbCredentials.username) sslmode=verify-full sslrootcert=dist/lambda/rds-ca.pem" -v ON_ERROR_STOP=1 -f database/001_initial.sql
-  if ($LASTEXITCODE -ne 0) { throw 'Database migration failed' }
-} finally {
-  Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
-  $dbCredentials=$null
-}
+npm run db:migrate:aws
 ```
 
-连接串同时指定实际数据库域名和回环 hostaddr，既使用隧道，又保留 TLS 主机名校验。SQL 可重复执行，但当前迁移器只支持初始建表，不是完整的版本化迁移框架。
+脚本默认使用 `aws-course` profile、Sydney 区域和 `octoshelf-course-dev` Stack。它通过 AWS CLI 在内存中读取数据库凭证，经本机 15432 端口的 SSM 隧道连接 Aurora，并使用 RDS CA 和实际数据库域名验证 TLS。脚本不读取本地 `.env`，不会把密码写入命令参数或文件。
+
+自定义 Stack 或端口时使用 `node scripts/migrate-aws.mjs --stack YOUR_STACK --profile aws-course --port 15432`。SQL 可重复执行，但当前迁移器只支持初始建表，不是完整的版本化迁移框架。
 
 后续可以沿用该隧道，用 psql 或数据库客户端管理表。不要将数据库安全组改为对公网开放。
 
