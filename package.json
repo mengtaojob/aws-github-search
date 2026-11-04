@@ -20,6 +20,7 @@
     "test:postgres": "vitest run --config vitest.postgres.config.ts",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "db:migrate:aws": "node scripts/migrate-aws.mjs",
+    "aws:preflight": "node scripts/aws-preflight.mjs",
     "smoke": "node --env-file-if-exists=.env scripts/smoke.mjs",
     "check": "npm run typecheck && npm test && npm run build",
     "infra:check": "node scripts/check-infra.mjs"

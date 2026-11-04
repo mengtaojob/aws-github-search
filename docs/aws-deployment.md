@@ -47,6 +47,15 @@ aws sts get-caller-identity
 
 ## 3. 验证数据库版本和模板
 
+先检查账号计划：
+
+```powershell
+npm run aws:preflight
+if ($LASTEXITCODE -ne 0) { throw 'AWS account plan preflight did not pass; stop before deployment' }
+```
+
+当前模板使用位于自定义 VPC 的标准 Aurora 配置。Free plan 要求使用 Express，而 Express 无法关联 VPC；不能只添加一个 Express 标志来保留原网络设计。首次部署已因这一限制回滚，详见 [失败诊断](aws-deployment-failure.md)。应先决定使用兼容的账号计划，或与老师确认修改架构，再进行后续部署。
+
 模板默认 Aurora PostgreSQL `17.5`，但区域可用性需部署前实时核验，不能把本地模板默认值当作可用性证明：
 
 ```powershell

@@ -1,17 +1,29 @@
 # AWS 部署前检查记录
 
-检查日期：2026-11-04。以下查询使用 `aws-course` profile；目前只完成本地准备和只读检查，没有创建 Stack、变更集、S3 上传桶或其他云资源。
+检查日期：2026-11-04。以下查询使用 `aws-course` profile。用户已执行变更集预览，SAM 已准备辅助 S3 桶并上传代码/模板；业务资源尚未正式创建。
+
+后续更新：用户已执行变更集，但 Aurora 因 Free plan 限制创建失败，业务 Stack 已回滚至 ROLLBACK_COMPLETE。当前不能直接重试原部署；详见 [首次部署失败诊断](aws-deployment-failure.md)。下文变更集预览状态为执行前的历史记录。
+
+## 变更集预览核验
+
+- 变更集名称：`samcli-deploy1793778616`。
+- 变更集状态：`CREATE_COMPLETE`，表示变更集生成完成，不代表业务 Stack 创建完成。
+- 执行状态：`AVAILABLE`，尚未执行。
+- 业务 Stack `octoshelf-course-dev`：`REVIEW_IN_PROGRESS`。
+- 资源计划：51 项 Add、0 项 Modify、0 项 Remove。这是 CloudFormation 资源条目数量，不是 51 台服务器。
+- 参数与计划一致：PostgreSQL 17.5、单 NAT、启用跳板机、项目名 octoshelf-course。
+- 正式执行该变更集才会开始创建 Aurora、NAT、EC2、Lambda 等业务资源，并产生相应费用。创建成功后还需初始化数据库表和上传前端。
 
 ## 已核验
 
 - SAM CLI 实际执行 `sam validate --lint` 通过。
 - Sydney 区域的 RDS 只读查询返回 Aurora PostgreSQL 17.5 / db.serverless 可订购配置。
 - Lambda 列表存在原有 `github-user-search`；本次没有修改它。
-- Sydney 区域的非删除 CloudFormation Stack 列表为空，计划的新 Stack 名为 `octoshelf-course-dev`。
+- 预览之前 Sydney 区域的非删除 CloudFormation Stack 列表为空；随后用户为 `octoshelf-course-dev` 生成了变更集。
 - `dist/lambda/` 已有 ES Module、package.json 和 RDS CA 证书。
 - Session Manager 插件已安装，用户验证版本为 1.2.896.0。
 - Lambda 构建产物已重新生成，构建成功。
-- SAM 自身执行 CloudFormation 只读查询成功完成身份认证，返回计划的 Stack 尚不存在；这属于新部署前的预期状态。
+- SAM 自身执行 CloudFormation 只读查询成功完成身份认证；用户随后成功生成变更集。
 - 已成功执行若干服务的只读 API，不代表全部资源创建权限、服务额度和账户限制已验证。角色名称不能单独证明部署授权。
 
 ## 计划参数
@@ -43,7 +55,7 @@
 
 ## 继续之前
 
-1. 使用部署文档的 `--no-execute-changeset` 命令生成预览；它会上传代码，并可能创建辅助 S3 桶，因此可能有少量 S3 费用。
+1. 变更集预览已完成，辅助 S3 桶和上传对象可能有少量 S3 费用。
 2. 核对预览资源清单、确认持续运行费用，并计划实验完成后的清理时间。
 3. 准备好后再执行正式部署，不能把预览成功等同于资源已部署。
 
