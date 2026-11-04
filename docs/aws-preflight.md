@@ -1,6 +1,6 @@
 # AWS 部署前检查记录
 
-检查日期：2026-11-04。以下查询使用 `aws-course` profile；没有创建 Stack、变更集、S3 上传桶或其他云资源。
+检查日期：2026-11-04。以下查询使用 `aws-course` profile；目前只完成本地准备和只读检查，没有创建 Stack、变更集、S3 上传桶或其他云资源。
 
 ## 已核验
 
@@ -9,6 +9,9 @@
 - Lambda 列表存在原有 `github-user-search`；本次没有修改它。
 - Sydney 区域的非删除 CloudFormation Stack 列表为空，计划的新 Stack 名为 `octoshelf-course-dev`。
 - `dist/lambda/` 已有 ES Module、package.json 和 RDS CA 证书。
+- Session Manager 插件已安装，用户验证版本为 1.2.896.0。
+- Lambda 构建产物已重新生成，构建成功。
+- SAM 自身执行 CloudFormation 只读查询成功完成身份认证，返回计划的 Stack 尚不存在；这属于新部署前的预期状态。
 - 已成功执行若干服务的只读 API，不代表全部资源创建权限、服务额度和账户限制已验证。角色名称不能单独证明部署授权。
 
 ## 计划参数
@@ -40,8 +43,8 @@
 
 ## 继续之前
 
-1. 安装 Session Manager 插件，验证 `session-manager-plugin --version`。
-2. 确认接受持续运行费用，并计划实验完成后的清理时间。
-3. 确认独立 Stack 的参数和待创建资源，再生成并检查部署变更集。
+1. 使用部署文档的 `--no-execute-changeset` 命令生成预览；它会上传代码，并可能创建辅助 S3 桶，因此可能有少量 S3 费用。
+2. 核对预览资源清单、确认持续运行费用，并计划实验完成后的清理时间。
+3. 准备好后再执行正式部署，不能把预览成功等同于资源已部署。
 
 数据库初始化已提供 `npm run db:migrate:aws`，通过 SSM 隧道执行；脚本语法和帮助输出已检查，真实云端迁移仍须等待 Stack 和隧道创建后验证。

@@ -67,10 +67,14 @@ sam validate --lint --template-file infrastructure/template.yaml --region ap-sou
 选择全新 Stack 名，避免与现有实验冲突。下面启用跳板机以满足课程运维演示，会增加 EC2、EBS 和公网 IPv4 费用。
 
 ```powershell
-sam deploy --guided --template-file infrastructure/template.yaml --stack-name octoshelf-course-dev --region ap-southeast-2 --capabilities CAPABILITY_IAM --parameter-overrides ProjectName=octoshelf-course DatabaseEngineVersion=17.5 NatMode=single EnableBastion=true
+sam deploy --template-file infrastructure/template.yaml --stack-name octoshelf-course-dev --region ap-southeast-2 --profile aws-course --resolve-s3 --capabilities CAPABILITY_IAM --parameter-overrides ProjectName=octoshelf-course DatabaseEngineVersion=17.5 NatMode=single EnableBastion=true --no-execute-changeset
 ```
 
-`--guided` 中保留部署前查看 changeset 的选项，检查将创建的资源、IAM 角色和费用范围后再执行。IAM Role 不使用管理员权限；Secrets 读取仅针对本 Stack 的 Secret。Lambda 创建/清理 ENI 的权限按 AWS 服务要求包含通配资源。
+这是变更集预览命令：`--no-execute-changeset` 保证本次生成变更集后退出，不创建模板中的 Aurora、NAT、EC2、Lambda 等业务资源。`--resolve-s3` 仍可能创建 SAM 打包用的辅助 Stack/S3 桶并上传代码，产生少量 S3 存储和请求费用。第一次预览时，业务 Stack 可能显示 `REVIEW_IN_PROGRESS`，这只是待执行的占位状态。
+
+检查终端中的资源清单，预期本次是新建资源（Add）；核对参数、IAM 角色和费用影响。确认准备好正式创建资源之后，再使用同一命令删除 `--no-execute-changeset`、增加 `--confirm-changeset` 执行部署，并在终端审核确认。正式部署会创建收费资源，不应在尚未检查预览时执行。
+
+IAM Role 不使用管理员权限；Secrets 读取仅针对本 Stack 的 Secret。Lambda 创建/清理 ENI 的权限按 AWS 服务要求包含通配资源。
 
 模板声明的 Lambda 和 API 名称与旧项目不同，不导入、不更新旧资源。函数名还包含 Stack 名；建议 Stack 名保持简短。
 
