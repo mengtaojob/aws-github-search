@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Scoped code-only GitHub deploy role; does not create or update cloud infrastructure
+Parameters:
+  GitHubRepository:
+    Type: String
+    Description: owner/repository
+    AllowedPattern: '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
+  FunctionArn: { Type: String }
+  WebBucketArn: { Type: String }
+  DistributionArn: { Type: String }
+  OidcProviderArn:
+    Type: String
+    Description: Existing token.actions.githubusercontent.com IAM provider ARN
+Resources:
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Federated: !Ref OidcProviderArn }
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubRepository}:environment:production'
+      Policies:
+        - PolicyName: deploy-existing-project-code
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [lambda:UpdateFunctionCode, lambda:GetFunctionConfiguration]
+                Resource: !Ref FunctionArn
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Ref WebBucketArn
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub '${WebBucketArn}/*'
+              - Effect: Allow
+                Action: cloudfront:CreateInvalidation
+                Resource: !Ref DistributionArn
+Outputs:
+  DeployRoleArn: { Value: !GetAtt DeployRole.Arn }

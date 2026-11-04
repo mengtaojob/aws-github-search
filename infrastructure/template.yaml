@@ -1,0 +1,410 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: OctoShelf homework - isolated VPC, Lambda, Aurora PostgreSQL, static Next.js and optional SSM bastion
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: octoshelf-course
+    AllowedPattern: '^[a-z][a-z0-9-]{2,25}$'
+  DatabaseEngineVersion:
+    Type: String
+    Default: '17.5'
+    Description: Verify availability in ap-southeast-2 before deployment; must support Aurora Serverless v2
+  NatMode:
+    Type: String
+    Default: single
+    AllowedValues: [single, per-az]
+    Description: single costs less but app subnet B uses NAT in AZ A; per-az is more resilient
+  EnableBastion:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Create an EC2 managed instance for SSM port forwarding; no inbound SSH
+  BastionImage:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+Conditions:
+  PerAzNat: !Equals [!Ref NatMode, per-az]
+  WithBastion: !Equals [!Ref EnableBastion, 'true']
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.42.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-vpc' }]
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+  PublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: 10.42.0.0/24
+      MapPublicIpOnLaunch: false
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-public-a' }]
+  PublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: 10.42.1.0/24
+      MapPublicIpOnLaunch: false
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-public-b' }]
+  AppA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: 10.42.10.0/24
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-app-a' }]
+  AppB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: 10.42.11.0/24
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-app-b' }]
+  DatabaseA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: 10.42.20.0/24
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-database-a' }]
+  DatabaseB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: 10.42.21.0/24
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-database-b' }]
+  PublicRoutes:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  PublicInternet:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties: { RouteTableId: !Ref PublicRoutes, DestinationCidrBlock: 0.0.0.0/0, GatewayId: !Ref InternetGateway }
+  PublicAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref PublicA, RouteTableId: !Ref PublicRoutes }
+  PublicBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref PublicB, RouteTableId: !Ref PublicRoutes }
+  NatAddressA:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties: { Domain: vpc }
+  NatA:
+    Type: AWS::EC2::NatGateway
+    DependsOn: PublicInternet
+    Properties: { SubnetId: !Ref PublicA, AllocationId: !GetAtt NatAddressA.AllocationId }
+  NatAddressB:
+    Type: AWS::EC2::EIP
+    Condition: PerAzNat
+    DependsOn: GatewayAttachment
+    Properties: { Domain: vpc }
+  NatB:
+    Type: AWS::EC2::NatGateway
+    Condition: PerAzNat
+    DependsOn: PublicInternet
+    Properties: { SubnetId: !Ref PublicB, AllocationId: !GetAtt NatAddressB.AllocationId }
+  AppRoutesA:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  AppRoutesB:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  AppInternetA:
+    Type: AWS::EC2::Route
+    Properties: { RouteTableId: !Ref AppRoutesA, DestinationCidrBlock: 0.0.0.0/0, NatGatewayId: !Ref NatA }
+  AppInternetB:
+    Type: AWS::EC2::Route
+    Properties: { RouteTableId: !Ref AppRoutesB, DestinationCidrBlock: 0.0.0.0/0, NatGatewayId: !If [PerAzNat, !Ref NatB, !Ref NatA] }
+  AppAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref AppA, RouteTableId: !Ref AppRoutesA }
+  AppBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref AppB, RouteTableId: !Ref AppRoutesB }
+  DatabaseRoutes:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  DatabaseAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref DatabaseA, RouteTableId: !Ref DatabaseRoutes }
+  DatabaseBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref DatabaseB, RouteTableId: !Ref DatabaseRoutes }
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda outbound HTTPS and PostgreSQL
+      VpcId: !Ref Vpc
+      SecurityGroupEgress: [{ IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0 }]
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSM managed bastion - no inbound ports
+      VpcId: !Ref Vpc
+      SecurityGroupEgress: [{ IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0 }]
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Aurora - only Lambda and bastion may connect
+      VpcId: !Ref Vpc
+      SecurityGroupEgress: [{ IpProtocol: tcp, FromPort: 5432, ToPort: 5432, CidrIp: 127.0.0.1/32 }]
+  LambdaDatabaseIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: { GroupId: !Ref DatabaseSecurityGroup, IpProtocol: tcp, FromPort: 5432, ToPort: 5432, SourceSecurityGroupId: !Ref LambdaSecurityGroup }
+  BastionDatabaseIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: { GroupId: !Ref DatabaseSecurityGroup, IpProtocol: tcp, FromPort: 5432, ToPort: 5432, SourceSecurityGroupId: !Ref BastionSecurityGroup }
+  LambdaDatabaseEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties: { GroupId: !Ref LambdaSecurityGroup, IpProtocol: tcp, FromPort: 5432, ToPort: 5432, DestinationSecurityGroupId: !Ref DatabaseSecurityGroup }
+  BastionDatabaseEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties: { GroupId: !Ref BastionSecurityGroup, IpProtocol: tcp, FromPort: 5432, ToPort: 5432, DestinationSecurityGroupId: !Ref DatabaseSecurityGroup }
+
+  DatabaseSubnets:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Isolated Aurora subnets with no internet default route
+      SubnetIds: [!Ref DatabaseA, !Ref DatabaseB]
+  DatabaseCluster:
+    Type: AWS::RDS::DBCluster
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: aurora-postgresql
+      EngineVersion: !Ref DatabaseEngineVersion
+      DatabaseName: github_search
+      MasterUsername: github_admin
+      ManageMasterUserPassword: true
+      DBSubnetGroupName: !Ref DatabaseSubnets
+      VpcSecurityGroupIds: [!Ref DatabaseSecurityGroup]
+      StorageEncrypted: true
+      BackupRetentionPeriod: 1
+      ServerlessV2ScalingConfiguration: { MinCapacity: 0.5, MaxCapacity: 2 }
+      DeletionProtection: false
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref DatabaseCluster
+      DBInstanceClass: db.serverless
+      Engine: aurora-postgresql
+      PubliclyAccessible: false
+  ApiAccessSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Shared private demo access token; enter manually in web or Android client
+      GenerateSecretString: { PasswordLength: 48, ExcludePunctuation: true }
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: 'sts:AssumeRole' }]
+      Policies:
+        - PolicyName: logs-vpc-and-project-secrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ['logs:CreateLogStream', 'logs:PutLogEvents']
+                Resource: !GetAtt FunctionLogs.Arn
+              - Effect: Allow
+                Action: ['ec2:CreateNetworkInterface', 'ec2:DescribeNetworkInterfaces', 'ec2:DescribeSubnets', 'ec2:DeleteNetworkInterface', 'ec2:AssignPrivateIpAddresses', 'ec2:UnassignPrivateIpAddresses']
+                Resource: '*'
+              - Effect: Allow
+                Action: 'secretsmanager:GetSecretValue'
+                Resource: [!Ref ApiAccessSecret, !GetAtt DatabaseCluster.MasterUserSecret.SecretArn]
+  FunctionLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${AWS::StackName}-api'
+      RetentionInDays: 7
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    DependsOn: [DatabaseInstance, AppInternetA, AppInternetB, LambdaDatabaseIngress, LambdaDatabaseEgress]
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${AWS::StackName}-api'
+      CodeUri: ../dist/lambda/
+      Handler: index.handler
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 29
+      Role: !GetAtt ExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds: [!Ref LambdaSecurityGroup]
+        SubnetIds: [!Ref AppA, !Ref AppB]
+      Environment:
+        Variables:
+          STORE_DRIVER: postgres
+          DB_HOST: !GetAtt DatabaseCluster.Endpoint.Address
+          DB_NAME: github_search
+          DB_SECRET_ARN: !GetAtt DatabaseCluster.MasterUserSecret.SecretArn
+          API_SECRET_ARN: !Ref ApiAccessSecret
+          DB_CA_FILE: /var/task/rds-ca.pem
+          CORS_ORIGINS: !Sub 'https://${WebDistribution.DomainName}'
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${ProjectName}-${AWS::StackName}-http'
+      ProtocolType: HTTP
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApiFunction.Arn
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 29000
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: '$default'
+      Target: !Sub 'integrations/${ApiIntegration}'
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: '$default'
+      AutoDeploy: true
+      DefaultRouteSettings: { ThrottlingBurstLimit: 10, ThrottlingRateLimit: 5 }
+  ApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApiFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*'
+
+  WebBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+      BucketEncryption: { ServerSideEncryptionConfiguration: [{ ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 } }] }
+  WebOriginAccess:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-s3-origin'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  WebResponseHeaders:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub '${AWS::StackName}-web-headers'
+        SecurityHeadersConfig:
+          ContentTypeOptions: { Override: true }
+          FrameOptions: { FrameOption: DENY, Override: true }
+          ReferrerPolicy: { ReferrerPolicy: strict-origin-when-cross-origin, Override: true }
+          StrictTransportSecurity: { AccessControlMaxAgeSec: 31536000, IncludeSubdomains: true, Override: true }
+  WebDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100
+        HttpVersion: http2and3
+        Origins:
+          - Id: web
+            DomainName: !GetAtt WebBucket.RegionalDomainName
+            OriginAccessControlId: !Ref WebOriginAccess
+            S3OriginConfig: { OriginAccessIdentity: '' }
+        DefaultCacheBehavior:
+          TargetOriginId: web
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ResponseHeadersPolicyId: !Ref WebResponseHeaders
+        ViewerCertificate: { CloudFrontDefaultCertificate: true }
+  WebBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub '${WebBucket.Arn}/*'
+            Condition: { StringEquals: { 'AWS:SourceArn': !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}' } }
+
+  BastionRole:
+    Type: AWS::IAM::Role
+    Condition: WithBastion
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: [{ Effect: Allow, Principal: { Service: ec2.amazonaws.com }, Action: 'sts:AssumeRole' }]
+      ManagedPolicyArns: [!Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore']
+  BastionProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: WithBastion
+    Properties: { Roles: [!Ref BastionRole] }
+  Bastion:
+    Type: AWS::EC2::Instance
+    Condition: WithBastion
+    DependsOn: PublicInternet
+    Properties:
+      ImageId: !Ref BastionImage
+      InstanceType: t3.micro
+      IamInstanceProfile: !Ref BastionProfile
+      MetadataOptions: { HttpTokens: required }
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          AssociatePublicIpAddress: true
+          SubnetId: !Ref PublicA
+          GroupSet: [!Ref BastionSecurityGroup]
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs: { VolumeSize: 8, VolumeType: gp3, Encrypted: true, DeleteOnTermination: true }
+      Tags: [{ Key: Name, Value: !Sub '${ProjectName}-ssm-bastion' }]
+
+Outputs:
+  ApiUrl:
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
+  SearchUrl:
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/search/users?q=torvalds'
+  FunctionName:
+    Value: !Ref ApiFunction
+  WebUrl:
+    Value: !Sub 'https://${WebDistribution.DomainName}'
+  WebBucketName:
+    Value: !Ref WebBucket
+  DistributionId:
+    Value: !Ref WebDistribution
+  DatabaseHost:
+    Value: !GetAtt DatabaseCluster.Endpoint.Address
+  DatabaseSecretArn:
+    Value: !GetAtt DatabaseCluster.MasterUserSecret.SecretArn
+  ApiAccessSecretArn:
+    Value: !Ref ApiAccessSecret
+  BastionId:
+    Condition: WithBastion
+    Value: !Ref Bastion

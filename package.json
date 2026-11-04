@@ -1,0 +1,52 @@
+{
+  "name": "aws-github-search",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "dev:web": "next dev --hostname 127.0.0.1",
+    "build": "npm run build:web && npm run build:lambda",
+    "build:web": "next build",
+    "build:lambda": "node scripts/build-lambda.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:postgres": "vitest run --config vitest.postgres.config.ts",
+    "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
+    "smoke": "node --env-file-if-exists=.env scripts/smoke.mjs",
+    "check": "npm run typecheck && npm test && npm run build",
+    "infra:check": "node scripts/check-infra.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.922.0",
+    "@hono/aws-lambda": "^1.0.1",
+    "@hono/node-server": "^2.1.6",
+    "hono": "^4.10.0",
+    "lucide-react": "^0.468.0",
+    "next": "^16.4.4",
+    "pg": "^8.16.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "^22.18.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "concurrently": "^9.2.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0",
+    "yaml": "^2.8.0"
+  }
+}

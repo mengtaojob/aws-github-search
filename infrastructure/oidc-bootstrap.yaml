@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Optional one-time GitHub OIDC provider - deploy only if the account does not already have it
+Resources:
+  GitHubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+Outputs:
+  ProviderArn: { Value: !Ref GitHubOidc }

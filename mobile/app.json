@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "OctoShelf",
+    "slug": "octoshelf-android",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": { "package": "com.homework.octoshelf", "versionCode": 1 },
+    "assetBundlePatterns": ["**/*"]
+  }
+}

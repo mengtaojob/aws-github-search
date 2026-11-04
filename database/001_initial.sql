@@ -1,0 +1,10 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS github_users (
+  github_id BIGINT PRIMARY KEY,
+  profile JSONB NOT NULL,
+  note TEXT NOT NULL DEFAULT '' CHECK (char_length(note) <= 1000),
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMIT;

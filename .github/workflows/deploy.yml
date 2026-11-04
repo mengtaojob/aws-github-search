@@ -1,0 +1,71 @@
+name: Deploy existing AWS environment
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: >-
+      vars.AWS_DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Validate deployment configuration
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
+          WEB_BUCKET: ${{ vars.AWS_WEB_BUCKET }}
+          DISTRIBUTION_ID: ${{ vars.AWS_DISTRIBUTION_ID }}
+        run: |
+          for name in API_BASE_URL DEPLOY_ROLE FUNCTION_NAME WEB_BUCKET DISTRIBUTION_ID; do
+            if [ -z "${!name}" ]; then echo "Missing required variable: $name"; exit 1; fi
+          done
+      - run: npm run typecheck && npm test
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.API_BASE_URL }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-2
+      - name: Deploy Lambda code
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
+        run: |
+          cd dist/lambda
+          zip -r ../lambda.zip .
+          aws lambda update-function-code --function-name "$FUNCTION_NAME" --zip-file fileb://../lambda.zip > /dev/null
+          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+      - name: Deploy Next.js static export
+        env:
+          WEB_BUCKET: ${{ vars.AWS_WEB_BUCKET }}
+          DISTRIBUTION_ID: ${{ vars.AWS_DISTRIBUTION_ID }}
+        run: |
+          aws s3 sync out/_next/static/ "s3://$WEB_BUCKET/_next/static/" --cache-control 'public,max-age=31536000,immutable'
+          aws s3 sync out/ "s3://$WEB_BUCKET/" --exclude '_next/static/*' --cache-control 'no-cache'
+          aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' > /dev/null
+      - name: Health check
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: curl --fail --retry 3 "$API_BASE_URL/health"
