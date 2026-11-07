@@ -2,6 +2,14 @@
 
 当前已验证：本地网页通过本地 API 将两条收藏写入 Aurora Express 的 github_search.public.github_users。下一阶段将本地 API 迁移至 Lambda，暂时继续使用本地网页。
 
+## 2026-11-07 云端部署验证
+
+Stack `octoshelf-free-api` 已为 CREATE_COMPLETE。API 地址：`https://bya6zpuudd.execute-api.ap-southeast-2.amazonaws.com`。
+
+已实际验证：/health 返回 200、未认证 /users 返回 401、使用项目令牌的 /users 返回 200 并读到 torvalds 与 TorvaldsDB、缺少搜索关键词返回 400、真实 GitHub 搜索返回 200 且包含 torvalds。浏览器 Origin 为 http://127.0.0.1:3000 时 CORS 放行。验证只读，未修改收藏；项目令牌仅在验证进程内存中使用，未写入文档、前端或配置文件。
+
+本地 `.env` 的 NEXT_PUBLIC_API_BASE_URL 已改为该 API 地址。原配置备份为 `.env.before-cloud-api.backup`，已被 Git 忽略。重启 Next.js 后，在页面连接设置中填写 Secrets Manager 生成的项目访问令牌，再验证网页。数据库 IAM 令牌与这个项目访问令牌用途不同，不能混用。
+
 ## 新旧模板必须区分
 
 - `infrastructure/template.yaml`：原课程 VPC 架构，在当前 Free plan 下无法创建，不能继续重试。
@@ -34,4 +42,4 @@ Lambda 中每次查询归还连接后将其关闭，避免运行环境冻结使�
 
 ## 后续验收
 
-正式部署成功后，先验证 /health、未认证请求返回 401，再通过项目令牌验证搜索和收藏读取。然后将本地网页的 NEXT_PUBLIC_API_BASE_URL 改为新 API 地址，重启前端，填写项目令牌，验证完整 CRUD。上述云端步骤尚未执行。
+接口的云端只读验收已完成。接下来在网页填写项目访问令牌，验证通过新 API 执行新增、备注标签修改和删除；前端公网托管、Android 和 CI/CD 尚未完成。
