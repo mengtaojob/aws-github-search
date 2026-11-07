@@ -174,6 +174,8 @@ GitHub CI 自带独立 PostgreSQL 容器，运行同一集成测试。
 
 ## 后续操作
 
+当前免费 Aurora 已创建并初始化，继续操作见 [本地网页连接 Aurora Express](docs/aurora-free-local.md)。该路径使用 IAM 认证，与下列原始 VPC 部署方案分开。
+
 - [AWS 部署、费用影响与资源清理](docs/aws-deployment.md)
 - [Android 运行与 APK 构建](mobile/README.md)
 - [设计取舍与核心概念](docs/implementation.md)
