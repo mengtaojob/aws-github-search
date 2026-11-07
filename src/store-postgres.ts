@@ -39,7 +39,9 @@ export async function databaseConfig(): Promise<pg.PoolConfig> {
 }
 
 export function database(): Promise<pg.Pool> {
-  poolPromise ??= databaseConfig().then((config) => new Pool({ max: 2, connectionTimeoutMillis: 10_000,
+  // Lambda freezes timers between invocations; close released connections so they don't block Aurora auto-pause.
+  poolPromise ??= databaseConfig().then((config) => new Pool({ max: 2,
+    maxUses: process.env.AWS_LAMBDA_FUNCTION_NAME ? 1 : Infinity, connectionTimeoutMillis: 10_000,
     idleTimeoutMillis: 30_000, query_timeout: 15_000, ...config })).catch((error) => { poolPromise = undefined; throw error; });
   return poolPromise;
 }
