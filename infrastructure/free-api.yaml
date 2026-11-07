@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Learning API for existing Aurora Express - no database, VPC or NAT creation
+Parameters:
+  DatabaseHost: { Type: String, AllowedPattern: '^[a-zA-Z0-9.-]+$' }
+  DatabaseResourceId: { Type: String, AllowedPattern: '^cluster-[a-zA-Z0-9]+$' }
+  DatabaseUser: { Type: String, Default: postgres, AllowedPattern: '^[a-zA-Z][a-zA-Z0-9_]*$' }
+  DatabaseName: { Type: String, Default: github_search }
+  AllowedOrigins: { Type: String, Default: 'http://127.0.0.1:3000,http://localhost:3000' }
+Resources:
+  ApiAccessSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Shared demo access token for OctoShelf
+      GenerateSecretString: { PasswordLength: 48, ExcludePunctuation: true }
+  FunctionLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-api'
+      RetentionInDays: 7
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: 'sts:AssumeRole' }]
+      Policies:
+        - PolicyName: project-api-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ['logs:CreateLogStream', 'logs:PutLogEvents']
+                Resource: !GetAtt FunctionLogs.Arn
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref ApiAccessSecret
+              - Effect: Allow
+                Action: rds-db:connect
+                Resource: !Sub 'arn:${AWS::Partition}:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:${DatabaseResourceId}/${DatabaseUser}'
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-api'
+      CodeUri: ../dist/lambda/
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      Handler: index.handler
+      Role: !GetAtt ExecutionRole.Arn
+      MemorySize: 256
+      Timeout: 29
+      Environment:
+        Variables:
+          STORE_DRIVER: postgres
+          DB_AUTH: iam
+          DB_HOST: !Ref DatabaseHost
+          DB_USER: !Ref DatabaseUser
+          DB_NAME: !Ref DatabaseName
+          DB_PORT: '5432'
+          DATABASE_SSL: 'true'
+          API_SECRET_ARN: !Ref ApiAccessSecret
+          CORS_ORIGINS: !Ref AllowedOrigins
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties: { Name: !Sub '${AWS::StackName}-http', ProtocolType: HTTP }
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApiFunction.Arn
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 29000
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: { ApiId: !Ref HttpApi, RouteKey: '$default', Target: !Sub 'integrations/${ApiIntegration}' }
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: '$default'
+      AutoDeploy: true
+      DefaultRouteSettings: { ThrottlingBurstLimit: 5, ThrottlingRateLimit: 2 }
+  ApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApiFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*'
+Outputs:
+  ApiUrl: { Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}' }
+  FunctionName: { Value: !Ref ApiFunction }
+  ApiAccessSecretArn: { Value: !Ref ApiAccessSecret }
