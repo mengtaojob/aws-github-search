@@ -51,18 +51,14 @@ jobs:
           command: deploy
       - name: Check deployed website
         run: curl --fail --retry 3 https://octoshelf-github-search.mengtaojob-7a7.workers.dev/ --output /dev/null
-  deploy-aws:
-    name: Deploy AWS Lambda
+  build-aws:
+    name: Build Lambda package
     if: >-
       vars.AWS_DEPLOY_ENABLED == 'true' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
-    environment: production
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -75,27 +71,68 @@ jobs:
       - name: Validate deployment configuration
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
-          DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
         run: |
-          for name in API_BASE_URL DEPLOY_ROLE FUNCTION_NAME; do
+          for name in API_BASE_URL FUNCTION_NAME; do
             if [ -z "${!name}" ]; then echo "Missing required variable: $name"; exit 1; fi
           done
       - run: npm run typecheck && npm test
       - run: npm run build:lambda
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ap-southeast-2
-      - name: Deploy Lambda code
-        env:
-          FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
+      - name: Package Lambda
         run: |
           cd dist/lambda
           zip -r ../lambda.zip .
-          aws lambda update-function-code --function-name "$FUNCTION_NAME" --zip-file fileb://../lambda.zip > /dev/null
+          cd ..
+          sha256sum lambda.zip > lambda.zip.sha256
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lambda-deployment
+          path: |
+            dist/lambda.zip
+            dist/lambda.zip.sha256
+          if-no-files-found: error
+          retention-days: 3
+  deploy-aws:
+    name: Deploy AWS Lambda
+    needs: build-aws
+    runs-on: [self-hosted, Linux, X64, octoshelf-lambda-deploy]
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      actions: read
+    env:
+      AWS_REGION: ap-southeast-2
+      AWS_DEFAULT_REGION: ap-southeast-2
+      AWS_PAGER: ''
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: lambda-deployment
+          path: lambda-deployment
+      - name: Verify package and EC2 role
+        working-directory: lambda-deployment
+        run: |
+          set -euo pipefail
+          sha256sum --check lambda.zip.sha256
+          role_arn=$(aws sts get-caller-identity --query Arn --output text)
+          case "$role_arn" in
+            arn:aws:sts::*:assumed-role/octoshelf-github-runner-RunnerRole-*/*) echo "Dedicated EC2 role verified" ;;
+            *) echo "Unexpected deployment identity"; exit 1 ;;
+          esac
+      - name: Deploy Lambda code
+        working-directory: lambda-deployment
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
+        run: |
+          set -euo pipefail
+          test -n "$FUNCTION_NAME"
+          aws lambda update-function-code --function-name "$FUNCTION_NAME" --zip-file fileb://lambda.zip --query '{Function:FunctionName,CodeHash:CodeSha256}' --output json
           aws lambda wait function-updated --function-name "$FUNCTION_NAME"
       - name: Health check
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: curl --fail --retry 3 "$API_BASE_URL/health"
+      - name: Clean deployment files
+        if: always()
+        run: rm -f lambda-deployment/lambda.zip lambda-deployment/lambda.zip.sha256

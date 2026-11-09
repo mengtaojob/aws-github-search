@@ -2,6 +2,8 @@
 
 用户选择新建专用 EC2，避免与跳板机共用机器。模板：`infrastructure/github-runner.yaml`；堆栈：`octoshelf-github-runner`。
 
+已创建实例 `i-04cea0d8ca7ff6374`，Runner `octoshelf-lambda-runner` 注册成功，标签 `octoshelf-lambda-deploy`。已通过 SSM 将前台监听切换为 systemd 后台服务，运行用户为 actions，开机自启。Lambda 发布尚待启用及 Actions 验收。
+
 ## 实例与权限
 
 - Ubuntu 24.04 LTS x86_64，t3.micro，16 GiB 加密 gp3 系统盘。

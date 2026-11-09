@@ -2,7 +2,7 @@
 
 当前状态：GitHub CI 和 Cloudflare 自动发布均已验收成功。用户修改 app/page.tsx 文案并推送提交 5919389 后，CI #5 通过、Deploy #6 自动成功，线上文案更新。手动发布亦已验证（Deploy #4，提交 7d46ebc，37 项单元测试通过）。当前分支为 main。AWS OIDC 尚不可用，保持 `AWS_DEPLOY_ENABLED` 不设置或为 `false`。
 
-后端采用用户选择的专用 EC2 自托管 Runner，以实例角色更新 Lambda，不创建 OIDC provider、不修改组织策略。模板及创建步骤见 [github-runner-setup.md](github-runner-setup.md)。变更预览已准备，尚未执行创建或注册。GitHub 建议自托管 Runner 用于私有仓库；实施时需限制任务触发范围及执行机权限。部署角色仅能更新当前 Lambda 的代码和读取更新状态，另包含实例自身的 SSM 管理权限。
+后端采用专用 EC2 自托管 Runner，以实例角色更新 Lambda，不创建 OIDC provider、不修改组织策略。实例 `i-04cea0d8ca7ff6374` 已创建，Runner `octoshelf-lambda-runner` 已注册，标签 `octoshelf-lambda-deploy`；后台服务已启用。模板及创建步骤见 [github-runner-setup.md](github-runner-setup.md)。构建在 GitHub 托管机器执行，EC2 仅下载本次运行的构建包、校验 SHA256 和调用 Lambda 更新。GitHub 建议自托管 Runner 用于私有仓库；实施时需限制任务触发范围及执行机权限。部署角色仅能更新当前 Lambda 的代码和读取更新状态，另包含实例自身的 SSM 管理权限。
 
 仓库：`mengtaojob/aws-github-search`，本地 origin 已绑定。2026-11-09 检查发现当前 AWS 会话的 `iam:ListOpenIDConnectProviders` 和 `iam:GetOpenIDConnectProvider` 被组织 SCP 明确拒绝。以下 OIDC 设置尚未完成，不要照搬为“已部署”。先完成 GitHub CI 和 Cloudflare 配置；AWS 部署认证需另行确认允许的方案，不修改组织限制，不升级套餐。
 
@@ -20,11 +20,9 @@ Deploy 使用 CI 检查过的同一个提交，包含两个独立任务：`deplo
 
 不要提交 .env、私钥、数据库备份、访问令牌。当前 .gitignore 已排除 .env、*.pem、dist、out 等文件。
 
-## 2. 配置 AWS OIDC
+## 2. AWS 部署认证（当前使用 EC2 实例角色）
 
-确认 AWS 账户中是否已有 token.actions.githubusercontent.com 的 OIDC provider；存在则复用，不存在才使用 infrastructure/oidc-bootstrap.yaml 创建。
-
-使用 infrastructure/github-deploy-role.yaml 创建部署角色，参数为实际 GitHub owner/repository、现有 Lambda ARN、OIDC provider ARN。角色仅允许更新这一个 Lambda 的代码和读取更新状态，不需要 AWS Access Key。
+当前不执行 OIDC 模板。专用 EC2 通过实例角色获取临时 AWS 凭证，GitHub 无需 AWS Access Key、Secret Key 或 AWS_DEPLOY_ROLE_ARN。旧 OIDC 模板仅供其他支持该功能的账户参考。
 
 GitHub 仓库 Settings → Environments → 新建 production。Deployment branches and tags 限定为 main，确保 OIDC 的 production 环境信任只用于正式分支。
 
@@ -36,7 +34,6 @@ GitHub 仓库 Settings → Environments → 新建 production。Deployment branc
 |---|---|
 | API_BASE_URL | https://bya6zpuudd.execute-api.ap-southeast-2.amazonaws.com |
 | AWS_FUNCTION_NAME | octoshelf-free-api-api |
-| AWS_DEPLOY_ROLE_ARN | 创建部署角色后得到的 ARN |
 
 仓库 Secrets（用户已保存）：
 
@@ -49,9 +46,9 @@ Cloudflare Token 使用指定 Worker 的 Individual Workers Editor，加账户 A
 
 ## 4. 启用及验收
 
-完成 Cloudflare 两个 Secrets 和 API_BASE_URL 后，在 Variables 添加仓库级变量 `DEPLOY_ENABLED=true`，启用前端发布。AWS 授权尚未就绪，不设置 AWS_DEPLOY_ENABLED；该任务会跳过。未来 AWS 授权完成后再设置仓库级 `AWS_DEPLOY_ENABLED=true`。
+完成 Cloudflare 两个 Secrets 和 API_BASE_URL 后，设置仓库变量 `DEPLOY_ENABLED=true` 启用前端发布。确认 Runner Idle、production 环境限制 main 分支，且仓库变量 AWS_FUNCTION_NAME 正确后，再设置仓库变量 `AWS_DEPLOY_ENABLED=true`。构建和部署会独立于 Cloudflare 任务执行。
 
-推送 main 后先查看 CI，成功后检查 Deploy Cloudflare and AWS。也可选择该工作流 → Run workflow → main 手动验证。当前预期 Cloudflare 任务成功、AWS 任务跳过；刷新线上站点验证收藏、搜索和编辑。只有 AWS 发布也验收成功，才能标记前后端 CI/CD 全部完成。
+推送 main 后先查看 CI，成功后检查 Deploy Cloudflare and AWS。也可选择该工作流 → Run workflow → main 手动验证。启用后预期 Cloudflare、Build Lambda package、Deploy AWS Lambda 三项均成功；刷新线上站点验证收藏、搜索和编辑。只有 AWS 发布也验收成功，才能标记前后端 CI/CD 全部完成。
 
 停止自动部署可将 DEPLOY_ENABLED 改为 false；这不会停止 AWS 上已运行资源的计费。
 
