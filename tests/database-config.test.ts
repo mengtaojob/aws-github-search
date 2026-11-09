@@ -2,6 +2,9 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const { token } = vi.hoisted(() => ({ token: vi.fn() }));
 vi.mock('@aws-sdk/rds-signer', () => ({ Signer: class { getAuthToken = token; } }));
 import { databaseConfig } from '../src/store-postgres';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 beforeEach(() => {
   for (const key of ['DB_AUTH', 'DB_HOST', 'DB_USER', 'AWS_REGION', 'DB_SECRET_ARN', 'DB_CA_FILE', 'DATABASE_URL', 'DATABASE_SSL', 'DB_PORT']) vi.stubEnv(key, '');
@@ -26,6 +29,15 @@ it('refreshes IAM tokens for each new connection and ignores a leftover local UR
 it('rejects missing IAM settings before a database connection', async () => {
   vi.stubEnv('DB_AUTH', 'iam');
   await expect(databaseConfig()).rejects.toThrow('DB_HOST');
+});
+it('loads the configured RDS CA for IAM without disabling TLS verification', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'rds-ca-test-'));
+  try {
+    const path = join(dir, 'ca.pem');
+    await writeFile(path, 'test-ca-content');
+    iam(); vi.stubEnv('DB_CA_FILE', path);
+    expect((await databaseConfig()).ssl).toEqual({ rejectUnauthorized: true, ca: 'test-ca-content' });
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });
 it('does not permit disabling TLS for IAM', async () => {
   iam(); vi.stubEnv('DATABASE_SSL', 'false');

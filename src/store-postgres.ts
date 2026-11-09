@@ -19,8 +19,8 @@ export async function databaseConfig(): Promise<pg.PoolConfig> {
       if (process.env.DATABASE_SSL === 'false') throw new Error('IAM database auth requires TLS; set DATABASE_SSL=true');
       const signer = new Signer({ hostname: host, username: user, port, region });
       config = { host, user, port, database: process.env.DB_NAME ?? 'github_search', password: () => signer.getAuthToken(),
-        // Express uses publicly trusted certificates. Never disable certificate verification.
-        ssl: { rejectUnauthorized: true }, connectionTimeoutMillis: 60_000 };
+        // Standard RDS uses the supplied RDS CA; Express can use the public trust store.
+        ssl: { rejectUnauthorized: true, ...(process.env.DB_CA_FILE ? { ca: await readFile(process.env.DB_CA_FILE, 'utf8') } : {}) }, connectionTimeoutMillis: 60_000 };
       return config;
     } else if (process.env.DB_SECRET_ARN) {
       const secret = JSON.parse(await readSecret(process.env.DB_SECRET_ARN)) as { username: string; password: string };

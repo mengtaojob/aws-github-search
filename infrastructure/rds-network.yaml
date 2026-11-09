@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Private Lambda subnets and one public NAT in the existing RDS VPC
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-08c92e15230b346a1
+  PublicSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-06a565d41b720d45d
+  DatabaseSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-077db7d975610cffc
+Resources:
+  AppA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      AvailabilityZone: ap-southeast-2a
+      CidrBlock: 172.31.48.0/24
+      MapPublicIpOnLaunch: false
+      Tags: [{Key: Name, Value: octoshelf-app-private-a}]
+  AppB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      AvailabilityZone: ap-southeast-2b
+      CidrBlock: 172.31.49.0/24
+      MapPublicIpOnLaunch: false
+      Tags: [{Key: Name, Value: octoshelf-app-private-b}]
+  NatAddress:
+    Type: AWS::EC2::EIP
+    Properties: {Domain: vpc}
+  Nat:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref PublicSubnetId
+      AllocationId: !GetAtt NatAddress.AllocationId
+      ConnectivityType: public
+      Tags: [{Key: Name, Value: octoshelf-nat}]
+  AppRoutes:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags: [{Key: Name, Value: octoshelf-app-private-routes}]
+  AppInternet:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref AppRoutes
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref Nat
+  AppAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: {SubnetId: !Ref AppA, RouteTableId: !Ref AppRoutes}
+  AppBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: {SubnetId: !Ref AppB, RouteTableId: !Ref AppRoutes}
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: OctoShelf Lambda outbound HTTPS and PostgreSQL
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - {IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0}
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          DestinationSecurityGroupId: !Ref DatabaseSecurityGroupId
+  DatabaseFromLambda:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DatabaseSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref LambdaSecurityGroup
+Outputs:
+  AppSubnetIds: {Value: !Join [',', [!Ref AppA, !Ref AppB]]}
+  LambdaSecurityGroupId: {Value: !Ref LambdaSecurityGroup}
+  NatGatewayId: {Value: !Ref Nat}

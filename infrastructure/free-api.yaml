@@ -1,12 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Learning API for existing Aurora Express - no database, VPC or NAT creation
+Description: Learning API for an existing PostgreSQL database, optionally attached to an existing VPC network
 Parameters:
   DatabaseHost: { Type: String, AllowedPattern: '^[a-zA-Z0-9.-]+$' }
-  DatabaseResourceId: { Type: String, AllowedPattern: '^cluster-[a-zA-Z0-9]+$' }
+  DatabaseResourceId: { Type: String, AllowedPattern: '^(cluster-|db-)[a-zA-Z0-9]+$' }
   DatabaseUser: { Type: String, Default: postgres, AllowedPattern: '^[a-zA-Z][a-zA-Z0-9_]*$' }
   DatabaseName: { Type: String, Default: github_search }
   AllowedOrigins: { Type: String, Default: 'http://127.0.0.1:3000,http://localhost:3000' }
+  DatabaseConnectionMode: { Type: String, Default: express, AllowedValues: [express, vpc] }
+  # In express mode these placeholders are unused; vpc mode requires real IDs.
+  AppSubnetIds: { Type: CommaDelimitedList, Default: 'subnet-00000000000000000' }
+  LambdaSecurityGroupId:
+    Type: String
+    Default: sg-00000000000000000
+    AllowedPattern: '^sg-([a-fA-F0-9]{8}|[a-fA-F0-9]{17})$'
+Conditions:
+  UseVpc: !Equals [!Ref DatabaseConnectionMode, vpc]
 Resources:
   ApiAccessSecret:
     Type: AWS::SecretsManager::Secret
@@ -24,6 +33,10 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: 'sts:AssumeRole' }]
+      ManagedPolicyArns: !If
+        - UseVpc
+        - [!Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole']
+        - !Ref AWS::NoValue
       Policies:
         - PolicyName: project-api-access
           PolicyDocument:
@@ -49,6 +62,11 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       MemorySize: 256
       Timeout: 29
+      VpcConfig: !If
+        - UseVpc
+        - SubnetIds: !Ref AppSubnetIds
+          SecurityGroupIds: [!Ref LambdaSecurityGroupId]
+        - !Ref AWS::NoValue
       Environment:
         Variables:
           STORE_DRIVER: postgres
@@ -58,6 +76,7 @@ Resources:
           DB_NAME: !Ref DatabaseName
           DB_PORT: '5432'
           DATABASE_SSL: 'true'
+          DB_CA_FILE: !If [UseVpc, '/var/task/rds-ca.pem', '']
           API_SECRET_ARN: !Ref ApiAccessSecret
           CORS_ORIGINS: !Ref AllowedOrigins
   HttpApi:
