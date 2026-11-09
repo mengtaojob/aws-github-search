@@ -11,9 +11,50 @@ concurrency:
   group: production-deploy
   cancel-in-progress: false
 jobs:
-  deploy:
+  deploy-cloudflare:
+    name: Deploy Cloudflare frontend
     if: >-
       vars.DEPLOY_ENABLED == 'true' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Validate Cloudflare configuration
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          for name in API_BASE_URL CF_ACCOUNT CF_TOKEN; do
+            if [ -z "${!name}" ]; then echo "Missing required setting: $name"; exit 1; fi
+          done
+      - run: npm ci
+      - run: npm run typecheck && npm test
+      - run: npm run build:web
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.API_BASE_URL }}
+      - name: Deploy Cloudflare static frontend
+        uses: cloudflare/wrangler-action@v4
+        with:
+          wranglerVersion: '4.158.0'
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+      - name: Check deployed website
+        run: curl --fail --retry 3 https://octoshelf-github-search.mengtaojob-7a7.workers.dev/ --output /dev/null
+  deploy-aws:
+    name: Deploy AWS Lambda
+    if: >-
+      vars.AWS_DEPLOY_ENABLED == 'true' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
@@ -36,16 +77,12 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           FUNCTION_NAME: ${{ vars.AWS_FUNCTION_NAME }}
-          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          for name in API_BASE_URL DEPLOY_ROLE FUNCTION_NAME CF_ACCOUNT CF_TOKEN; do
+          for name in API_BASE_URL DEPLOY_ROLE FUNCTION_NAME; do
             if [ -z "${!name}" ]; then echo "Missing required variable: $name"; exit 1; fi
           done
       - run: npm run typecheck && npm test
-      - run: npm run build
-        env:
-          NEXT_PUBLIC_API_BASE_URL: ${{ vars.API_BASE_URL }}
+      - run: npm run build:lambda
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
@@ -62,12 +99,3 @@ jobs:
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: curl --fail --retry 3 "$API_BASE_URL/health"
-      - name: Deploy Cloudflare static frontend
-        uses: cloudflare/wrangler-action@v4
-        with:
-          wranglerVersion: '4.158.0'
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-      - name: Check deployed website
-        run: curl --fail --retry 3 https://octoshelf-github-search.mengtaojob-7a7.workers.dev/ --output /dev/null
