@@ -10,12 +10,18 @@ Parameters:
   DatabaseSecurityGroupId:
     Type: AWS::EC2::SecurityGroup::Id
     Default: sg-077db7d975610cffc
+  AppAvailabilityZoneA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: ap-southeast-2a
+  AppAvailabilityZoneB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: ap-southeast-2b
 Resources:
   AppA:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VpcId
-      AvailabilityZone: ap-southeast-2a
+      AvailabilityZone: !Ref AppAvailabilityZoneA
       CidrBlock: 172.31.48.0/24
       MapPublicIpOnLaunch: false
       Tags: [{Key: Name, Value: octoshelf-app-private-a}]
@@ -23,7 +29,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VpcId
-      AvailabilityZone: ap-southeast-2b
+      AvailabilityZone: !Ref AppAvailabilityZoneB
       CidrBlock: 172.31.49.0/24
       MapPublicIpOnLaunch: false
       Tags: [{Key: Name, Value: octoshelf-app-private-b}]
