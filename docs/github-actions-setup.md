@@ -1,10 +1,10 @@
 # GitHub Actions：Cloudflare Workers + AWS Lambda
 
-当前状态：GitHub CI 和 Cloudflare 自动发布均已验收成功。用户修改 app/page.tsx 文案并推送提交 5919389 后，CI #5 通过、Deploy #6 自动成功，线上文案更新。手动发布亦已验证（Deploy #4，提交 7d46ebc，37 项单元测试通过）。当前分支为 main。AWS OIDC 尚不可用，保持 `AWS_DEPLOY_ENABLED` 不设置或为 `false`。
+当前状态：GitHub CI 和 Cloudflare 自动发布均已验收成功。用户修改 app/page.tsx 文案并推送提交 5919389 后，CI #5 通过、Deploy #6 自动成功，线上文案更新。Deploy #10（提交 5c7c4f5）手动验收成功：Cloudflare 发布、Lambda 构建、专用 EC2 更新 Lambda 三项均通过，37 项单元测试通过，部署后 API 健康接口返回 status=ok、storage=postgres。当前分支为 main，DEPLOY_ENABLED 和 AWS_DEPLOY_ENABLED 已启用。下一次文档提交用于验证启用后端开关后的完整自动触发链路。
 
 后端采用专用 EC2 自托管 Runner，以实例角色更新 Lambda，不创建 OIDC provider、不修改组织策略。实例 `i-04cea0d8ca7ff6374` 已创建，Runner `octoshelf-lambda-runner` 已注册，标签 `octoshelf-lambda-deploy`；后台服务已启用。模板及创建步骤见 [github-runner-setup.md](github-runner-setup.md)。构建在 GitHub 托管机器执行，EC2 仅下载本次运行的构建包、校验 SHA256 和调用 Lambda 更新。GitHub 建议自托管 Runner 用于私有仓库；实施时需限制任务触发范围及执行机权限。部署角色仅能更新当前 Lambda 的代码和读取更新状态，另包含实例自身的 SSM 管理权限。
 
-仓库：`mengtaojob/aws-github-search`，本地 origin 已绑定。2026-11-09 检查发现当前 AWS 会话的 `iam:ListOpenIDConnectProviders` 和 `iam:GetOpenIDConnectProvider` 被组织 SCP 明确拒绝。以下 OIDC 设置尚未完成，不要照搬为“已部署”。先完成 GitHub CI 和 Cloudflare 配置；AWS 部署认证需另行确认允许的方案，不修改组织限制，不升级套餐。
+仓库：`mengtaojob/aws-github-search`，本地 origin 已绑定。2026-11-09 检查发现当前 AWS 会话的 OIDC provider 查询被组织 SCP 明确拒绝。因此采用已验证的 EC2 实例角色方案；没有修改组织限制或升级套餐。
 
 ## 流程
 

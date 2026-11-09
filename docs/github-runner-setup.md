@@ -2,7 +2,7 @@
 
 用户选择新建专用 EC2，避免与跳板机共用机器。模板：`infrastructure/github-runner.yaml`；堆栈：`octoshelf-github-runner`。
 
-已创建实例 `i-04cea0d8ca7ff6374`，Runner `octoshelf-lambda-runner` 注册成功，标签 `octoshelf-lambda-deploy`。已通过 SSM 将前台监听切换为 systemd 后台服务，运行用户为 actions，开机自启。Lambda 发布尚待启用及 Actions 验收。
+已创建实例 `i-04cea0d8ca7ff6374`，Runner `octoshelf-lambda-runner` 注册成功，标签 `octoshelf-lambda-deploy`。已通过 SSM 将前台监听切换为 systemd 后台服务，运行用户为 actions，开机自启。Deploy #10 的 Lambda 构建和部署任务均已成功，已使用实例角色完成真实代码发布；API 健康检查通过。
 
 ## 实例与权限
 
