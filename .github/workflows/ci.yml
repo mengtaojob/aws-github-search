@@ -38,6 +38,7 @@ jobs:
       - run: sam validate --lint --template-file infrastructure/template.yaml --region ap-southeast-2
       - run: sam validate --lint --template-file infrastructure/free-api.yaml --region ap-southeast-2
       - run: sam validate --lint --template-file infrastructure/rds-network.yaml --region ap-southeast-2
+      - run: sam validate --lint --template-file infrastructure/github-runner.yaml --region ap-southeast-2
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

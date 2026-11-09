@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Dedicated EC2 GitHub deployment runner managed through SSM, no inbound ports
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-08c92e15230b346a1
+  PublicSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-06a565d41b720d45d
+  FunctionArn:
+    Type: String
+    Default: arn:aws:lambda:ap-southeast-2:992163310931:function:octoshelf-free-api-api
+  RunnerImage:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+Resources:
+  RunnerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Dedicated runner, outbound web only and no inbound ports
+      SecurityGroupEgress:
+        - {IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0}
+        - {IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0}
+  RunnerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: ec2.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
+      Policies:
+        - PolicyName: update-only-octoshelf-lambda-code
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [lambda:UpdateFunctionCode, lambda:GetFunctionConfiguration]
+                Resource: !Ref FunctionArn
+  RunnerProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref RunnerRole]
+  Runner:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref RunnerImage
+      InstanceType: t3.micro
+      CreditSpecification: {CPUCredits: standard}
+      IamInstanceProfile: !Ref RunnerProfile
+      MetadataOptions:
+        HttpTokens: required
+        HttpEndpoint: enabled
+        HttpPutResponseHopLimit: 1
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          AssociatePublicIpAddress: true
+          SubnetId: !Ref PublicSubnetId
+          GroupSet: [!Ref RunnerSecurityGroup]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: 16
+            Encrypted: true
+            DeleteOnTermination: true
+      Tags: [{Key: Name, Value: octoshelf-github-runner}]
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y curl unzip jq git ca-certificates libicu74
+          cd /tmp
+          curl --fail --retry 3 https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
+          unzip -q awscliv2.zip
+          ./aws/install
+          useradd --create-home --shell /bin/bash actions
+          install -d -o actions -g actions /home/actions/actions-runner
+          touch /var/lib/octoshelf-runner-bootstrap-complete
+Outputs:
+  InstanceId: {Value: !Ref Runner}
+  RunnerRoleArn: {Value: !GetAtt RunnerRole.Arn}
+  SecurityGroupId: {Value: !Ref RunnerSecurityGroup}
