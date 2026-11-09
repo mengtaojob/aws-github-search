@@ -6,8 +6,6 @@ Parameters:
     Description: owner/repository
     AllowedPattern: '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
   FunctionArn: { Type: String }
-  WebBucketArn: { Type: String }
-  DistributionArn: { Type: String }
   OidcProviderArn:
     Type: String
     Description: Existing token.actions.githubusercontent.com IAM provider ARN
@@ -33,14 +31,5 @@ Resources:
               - Effect: Allow
                 Action: [lambda:UpdateFunctionCode, lambda:GetFunctionConfiguration]
                 Resource: !Ref FunctionArn
-              - Effect: Allow
-                Action: s3:ListBucket
-                Resource: !Ref WebBucketArn
-              - Effect: Allow
-                Action: [s3:GetObject, s3:PutObject]
-                Resource: !Sub '${WebBucketArn}/*'
-              - Effect: Allow
-                Action: cloudfront:CreateInvalidation
-                Resource: !Ref DistributionArn
 Outputs:
   DeployRoleArn: { Value: !GetAtt DeployRole.Arn }
