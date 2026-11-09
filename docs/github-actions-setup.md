@@ -28,7 +28,7 @@ GitHub 仓库 Settings → Environments → 新建 production。Deployment branc
 
 ## 3. 仓库变量及机密
 
-在 Settings → Secrets and variables → Actions 中配置仓库级 Variables（也可以把 API 和 AWS 参数放入 production 环境，但启用开关必须是仓库变量）：
+在 Settings → Secrets and variables → Actions 中配置仓库级 Variables。构建任务不使用 production 环境，因此 API_BASE_URL、AWS_FUNCTION_NAME 和启用开关均放在仓库变量中：
 
 | 名称 | 值 |
 |---|---|
