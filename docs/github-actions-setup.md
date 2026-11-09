@@ -1,6 +1,6 @@
 # GitHub Actions：Cloudflare Workers + AWS Lambda
 
-当前状态：GitHub CI 已通过；Cloudflare 仓库 Secrets 已保存，部署尚未验收。AWS OIDC 尚不可用，保持 `AWS_DEPLOY_ENABLED` 不设置或为 `false`。
+当前状态：GitHub CI 已通过；Cloudflare 手动触发发布已验收成功（Deploy #4，提交 7d46ebc，37 项单元测试通过）。下一次推送用于验证 CI 成功后自动触发发布。AWS OIDC 尚不可用，保持 `AWS_DEPLOY_ENABLED` 不设置或为 `false`。
 
 仓库：`mengtaojob/aws-github-search`，本地 origin 已绑定。2026-11-09 检查发现当前 AWS 会话的 `iam:ListOpenIDConnectProviders` 和 `iam:GetOpenIDConnectProvider` 被组织 SCP 明确拒绝。以下 OIDC 设置尚未完成，不要照搬为“已部署”。先完成 GitHub CI 和 Cloudflare 配置；AWS 部署认证需另行确认允许的方案，不修改组织限制，不升级套餐。
 
