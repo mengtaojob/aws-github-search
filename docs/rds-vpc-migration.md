@@ -1,5 +1,11 @@
 # 从 Aurora Express 切换到 VPC 内的 RDS PostgreSQL
 
+## 切换验收状态
+
+2026-11-09：API 堆栈已完成更新。实际 Lambda 状态 Active、LastUpdateStatus Successful；连接到上述 RDS 所在 VPC 的两个私有子网，数据库用户为 github_app，使用打包的 RDS CA 验证 TLS。
+
+已验证：健康接口 200、收藏接口 200（两条数据及备注标签一致）、GitHub 搜索 200、Cloudflare 来源跨域预检 204。用户已在网页追加“已切换到 RDS PostgreSQL”备注，并通过跳板机在新 RDS 查询到该内容，线上写入验证完成。旧 Aurora 暂保留。
+
 ## 已完成的准备
 
 - RDS 实例：`octoshelf-rds-db`，数据库 `github_search`。
