@@ -35,7 +35,7 @@ jobs:
       - run: npm run typecheck
       - run: npx expo prebuild --platform android --no-install
       - name: Install Android build dependencies
-        run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
       - name: Build standalone demo APK
         working-directory: mobile/android
         run: |
@@ -45,8 +45,8 @@ jobs:
         run: |
           mkdir -p apk-output
           cp android/app/build/outputs/apk/release/app-release.apk apk-output/OctoShelf-android-demo.apk
-          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose apk-output/OctoShelf-android-demo.apk
-          "$ANDROID_HOME/build-tools/37.0.0/aapt" dump badging apk-output/OctoShelf-android-demo.apk > apk-output/package-info.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose apk-output/OctoShelf-android-demo.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging apk-output/OctoShelf-android-demo.apk > apk-output/package-info.txt
           cd apk-output
           sha256sum OctoShelf-android-demo.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v6

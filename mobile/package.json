@@ -10,17 +10,17 @@
     "export:android": "expo export --platform android"
   },
   "dependencies": {
-    "expo": "~58.0.23",
-    "expo-secure-store": "~58.0.2",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "react-native": "0.88.1",
-    "react-native-safe-area-context": "~5.11.1",
+    "expo": "55.0.32",
+    "expo-secure-store": "~55.0.18",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.10",
+    "react-native-safe-area-context": "~5.6.2",
     "react-native-web": "^0.21.4"
   },
   "devDependencies": {
-    "@types/react": "^19.3.0",
-    "typescript": "~6.0.3"
+    "@types/react": "~19.2.10",
+    "typescript": "~5.9.2"
   },
   "overrides": {
     "glob": "^14.0.3",

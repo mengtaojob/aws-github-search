@@ -1,6 +1,6 @@
 # OctoShelf Android 收藏展示端
 
-Expo SDK 58 / React Native / TypeScript，展示网页保存到现有 AWS API 的 GitHub 人员。
+Expo SDK 55 / React Native / TypeScript，展示网页保存到现有 AWS API 的 GitHub 人员。原预置 SDK 58 要求尚不可下载的 Android 37 SDK，因此本轮使用可构建的稳定 SDK 55 兼容组合。
 
 ## 已实现
 
@@ -24,7 +24,7 @@ Expo SDK 58 / React Native / TypeScript，展示网页保存到现有 AWS API �
 
 这是用于课程演示的独立安装包，内含 JS bundle，无需启动 Metro。使用 Expo 原生模板的测试签名，不适合直接发布应用商店。GitHub 托管构建可能消耗私有仓库 Actions 分钟额度；不使用专用 AWS Lambda 部署 Runner 进行 Android 编译。
 
-工作流使用 Node 24、JDK 17、Android SDK 37 / build-tools 37.0.0 / NDK 27.1，构建 arm64-v8a 和 x86_64，适配真机及 64 位模拟器。
+工作流使用 Node 24、JDK 17、Android SDK 36 / build-tools 36.0.0 / NDK 27.1，构建 arm64-v8a 和 x86_64，适配真机及 64 位模拟器。
 
 ## 逍遥模拟器安装
 
