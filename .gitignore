@@ -22,3 +22,6 @@ mobile/ios/
 mobile/node_modules/
 mobile/.env
 mobile/dist/
+mobile/web-preview/
+mobile/apk-output/
+*.apk

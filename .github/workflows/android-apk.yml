@@ -1,0 +1,54 @@
+name: Build Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['mobile/**', '.github/workflows/android-apk.yml']
+permissions:
+  contents: read
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx expo prebuild --platform android --no-install
+      - name: Install Android build dependencies
+        run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
+      - name: Build standalone demo APK
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --no-daemon --max-workers=2
+      - name: Prepare APK
+        run: |
+          mkdir -p apk-output
+          cp android/app/build/outputs/apk/release/app-release.apk apk-output/OctoShelf-android-demo.apk
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose apk-output/OctoShelf-android-demo.apk
+          "$ANDROID_HOME/build-tools/37.0.0/aapt" dump badging apk-output/OctoShelf-android-demo.apk > apk-output/package-info.txt
+          cd apk-output
+          sha256sum OctoShelf-android-demo.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v6
+        with:
+          name: OctoShelf-Android-APK
+          path: mobile/apk-output/
+          if-no-files-found: error
+          retention-days: 14

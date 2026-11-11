@@ -5,7 +5,16 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "android": { "package": "com.homework.octoshelf", "versionCode": 1 },
-    "assetBundlePatterns": ["**/*"]
+    "android": {
+      "package": "com.homework.octoshelf",
+      "versionCode": 1,
+      "blockedPermissions": ["android.permission.RECORD_AUDIO", "android.permission.SYSTEM_ALERT_WINDOW"]
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
