@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:go": "playwright test --config playwright.go.config.ts",
     "test:postgres": "vitest run --config vitest.postgres.config.ts",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "db:check": "tsx --env-file-if-exists=.env scripts/check-database.ts",

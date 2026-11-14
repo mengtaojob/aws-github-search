@@ -2,6 +2,9 @@
 
 一个从 GitHub 搜索到数据库持久化的全栈课程项目。搜索真实开发者，收藏完整档案，编辑个人备注和标签，在 Android 端查看同一份收藏。
 
+11 月 7 日 Go 版作业已完成本地整链路联调：前端 → Node.js 网关 → 独立 Go 服务 → PostgreSQL。
+启用方法和验收记录见 [本地 Go 联调](docs/local-go-chain.md)；未配置 Go 地址时继续使用原 Node.js 模式。
+
 前端为 Next.js + React + TypeScript，后端为 Hono + TypeScript。**本地 HTTP 服务与 AWS Lambda 共享业务代码**，无需把业务逻辑在两个环境分别维护。
 
 ## 先在 Windows 跑起来
