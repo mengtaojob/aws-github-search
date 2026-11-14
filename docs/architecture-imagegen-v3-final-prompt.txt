@@ -1,0 +1,6 @@
+Built-in Image Gen, 2026-11-12. No paid plugin or external API fallback.
+Final edit prompt:
+Edit this Chinese comic architecture poster precisely. Preserve its gorgeous chibi illustration style, all characters, textured paper, black outlines, colors, four-panel layout and all other architecture content. Make ONLY these accuracy corrections in panel 01:
+1. Remove the vertical arrow and label “获取 HTML / JS / CSS” between Android App and Cloudflare Workers. Android is a native separate client calling API Gateway directly; it does not fetch Next.js HTML. Keep Cloudflare Workers sending static HTML/JS/CSS to the browser only. The existing two horizontal HTTPS+Bearer project-token arrows from browser/Android to API Gateway should remain clear; ensure the browser has its own direct horizontal arrow to API Gateway.
+2. Beside the dashed Secrets Manager to Lambda arrow replace the caption with just “通过 NAT 获取项目 API 令牌，用于校验客户端请求”. Delete the misleading parenthesis saying this project API token is used for GitHub API. Secrets Manager holds the shared project access token for verifying browser and Android requests, not GitHub API credentials.
+Keep all other panels and headings unchanged. High quality finished poster, legible Chinese. No new panels, no unrelated changes.

@@ -1,0 +1,17 @@
+生成一张精美、完整、清晰的中文漫画风系统架构海报。附件只用作视觉风格参考：模仿其粗黑手绘描边、彩色纸张纹理、醒目编号、大标题、可爱开发者人物与机器人、清晰箭头、专业漫画排版；不要复制附件的工作流内容。不要做成普通PPT矩形流程图。横向高清大图，四个漫画分区，文字工整易读，不要堆长段落。
+
+大标题“OctoShelf：从用户访问到自动发布”，副标题“Cloudflare × AWS × PostgreSQL × GitHub Actions × Android”。
+
+分区1绿色“01 业务访问”。Cloudflare Workers（Next.js静态前端、CDN）向浏览器分发页面和JS。浏览器与Android App并列，分别用绿色箭头直接请求API Gateway，标“HTTPS + Bearer项目令牌”；不是Cloudflare代理API。Android标“已通过模拟器与真实数据验证”。API Gateway→AWS Lambda（Node.js + Hono，校验令牌、业务处理）→普通RDS PostgreSQL（github_search / github_users，无公网地址）。Lambda与RDS放在“同一AWS VPC·悉尼”的蓝色虚线边界内，API Gateway在边界外。Lambda→RDS标“内网5432 + TLS / IAM认证”。Secrets Manager保险箱在VPC边界外，虚线箭头到Lambda，标“项目访问令牌，经NAT读取”。功能小字“GitHub搜索、收藏增删改查、备注、标签”。浏览器令牌用sessionStorage，Android令牌用SecureStore。标注“响应沿链路返回”。
+
+分区2橙色“02 主动出网”。清晰链路：Lambda私有应用子网A/B→公共NAT Gateway（公有子网A）→IGW→公网GitHub API。两AZ共用一个NAT。标“HTTPS 443”；路由小卡“私有：0.0.0.0/0→NAT”“公有：0.0.0.0/0→IGW”。返回弧线“已建立请求的响应可返回”，红色阻挡“公网不能主动连入私有网卡”。灯泡说明“数据库访问走VPC内网，不经过NAT”。
+
+分区3蓝色“03 数据库运维”。管理员电脑→EC2跳板机（公有IP，psql）→RDS PostgreSQL（无公网地址），箭头分别标“SSH22，仅当前公网IP /32”“内网5432+TLS”。跳板机和RDS同VPC。盾牌“数据库仅放行Lambda安全组、跳板机安全组”。开发者气泡“业务直连数据库，不经过跳板机”。小字“RDS使用现有默认子网组，未另建隔离数据库子网”。
+
+分区4紫色“04 自动构建与发布”。开发者git push main→GitHub仓库→CI检查通过（类型、单元测试、数据库集成测试、构建），再分两条互不交叉的箭头：
+前端：GitHub托管Runner构建Next.js→out/→Wrangler→Cloudflare Workers更新前端；标“Cloudflare Token存GitHub Secrets”。
+后端：GitHub托管Runner构建Lambda ZIP+SHA256→GitHub Artifact→专用EC2 Runner下载校验→Lambda更新代码。小字“EC2实例角色，仅指定Lambda更新，无长期AWS密钥”。管理员经Session Manager管理Runner，标“无SSH入站；不直连数据库”。不要画OIDC，不要让CI走业务NAT。
+
+页脚图例“绿色业务、橙色出网、蓝色运维、紫色发布、虚线辅助”；“四个分区是同一套资源的不同视角”。简短费用提示“NAT、RDS、EC2、磁盘与公网IPv4会消耗额度”。
+
+严格正确：数据库是普通RDS PostgreSQL，不是Aurora、不是Serverless；不画旧S3/CloudFront，不画Worker代理API。不要任何密码、Token值、账号ID、长URL或水印。视觉优先采用参考图那种漂亮生动的漫画插画风，人物不遮挡架构，箭头方向一眼可懂。

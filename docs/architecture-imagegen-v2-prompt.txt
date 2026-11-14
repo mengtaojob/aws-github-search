@@ -1,0 +1,56 @@
+Create a BEAUTIFUL polished Chinese educational COMIC POSTER showing the actual OctoShelf system architecture. New original raster illustration, not a modification of the old rigid vector chart. Landscape 3:2, high resolution. Premium Japanese educational manga / charming hand-inked technology explainer: expressive small developer characters, clever cloud-shaped architecture buildings, friendly robot deployment courier, detailed but tidy illustrated computers/phone/database, soft watercolor/gouache colors, warm ivory paper, confident black outlines, subtle shadows, highly designed composition. Rich visual storytelling, restrained decoration, excellent hierarchy, clearly legible Simplified Chinese. It should look like a gorgeous professionally illustrated textbook spread, not ordinary rectangular PowerPoint boxes. Arrows must remain easy to follow, never obscure labels.
+
+Title EXACT: “OctoShelf：从用户访问到自动发布”
+Subtitle: “Cloudflare × AWS × PostgreSQL × GitHub Actions”
+Badge: “Web 与 Android 共用一套后端”
+Use FOUR numbered comic panels in a 2×2 grid with generously spaced illustrated nodes. Green / orange / blue / purple section accents. All four panels show different views of the SAME resources. Short precise labels, avoid paragraphs. No passwords, account IDs, tokens, IP addresses, long URLs, watermark.
+
+1 GREEN top-left “① 业务访问：页面和手机到数据库”
+Draw Cloudflare Workers as a friendly cloud library distributing static assets DOWN to a browser. Labels “Next.js 静态前端”, “CDN 分发页面与 JS”. Critically the browser, NOT Cloudflare server, directly calls API Gateway.
+Browser and Android phone both connect by clear green arrows to “API Gateway”, arrows labeled “HTTPS + Bearer 令牌”.
+Android label “Android App / 已通过模拟器与真实数据验证”; browser label “浏览器 / 搜索、收藏、备注、标签”.
+API Gateway → “AWS Lambda / Node.js + Hono / 令牌校验与业务处理” → “RDS PostgreSQL / github_search / github_users”.
+A dashed cloud boundary encloses Lambda and RDS only, labeled “同一 AWS VPC · 悉尼”. API Gateway is OUTSIDE this VPC boundary. Label Lambda→RDS arrow “内网 5432 + TLS · IAM 认证”.
+RDS badge “普通 RDS · 无公网地址”. NOT Aurora or Serverless.
+Small Secrets Manager safe outside VPC with dotted helper arrow to Lambda labeled “项目 API 令牌（经 NAT 读取）”.
+Tiny bottom caption “响应沿链路返回；CF 只分发静态资源，不代理业务 API。”
+Small neat note: “浏览器令牌：sessionStorage；Android：SecureStore”.
+
+2 ORANGE top-right “② 主动出网：NAT 与 IGW”
+Draw a road/bridge metaphor but correct clear path:
+“Lambda 私有子网 A/B” → “公共 NAT Gateway / 公有子网 A” → “IGW” → “GitHub API”.
+Arrow labels “主动出网”, “公网出口”, “HTTPS 443”.
+VPC boundary contains private application subnets and NAT; IGW at its edge, GitHub outside.
+Show TWO AZ subnet plaques with ONE shared NAT. Tiny route cards: “私有：0.0.0.0/0 → NAT”, “公有：0.0.0.0/0 → IGW”.
+Green return curve “已有请求的响应可返回”.
+Red incoming blocked arrow “公网不能主动连入私有网卡”.
+Short bulb caption “数据库访问走 VPC 内网，不经过 NAT。”
+Do not imply Lambda gets internet merely by using a public subnet.
+
+3 BLUE bottom-left “③ 人工运维：EC2 跳板机”
+Illustrate administrator with laptop → gatekeeper EC2 bastion → database vault.
+Labels “管理员电脑” → “EC2 跳板机 / 公有 IP · psql” → “RDS PostgreSQL / 无公网地址”.
+Arrows “SSH 22 / 当前公网 IP /32” and “内网 5432 + TLS”.
+VPC dashed boundary includes bastion and database, not administrator.
+Shield reads “数据库仅放行 Lambda 安全组、跳板机安全组”.
+Speech bubble “业务直连数据库，不经过跳板机！”
+Small accurate footer “RDS 使用现有默认子网组，未另建隔离数据库子网。”
+Draw small beautiful expressive engineer character, not large enough to compete with diagram.
+
+4 PURPLE bottom-right “④ GitHub Actions：自动构建与发布”
+Developer git push main → GitHub repository → CI checkpoint, labeled “类型检查 · 测试 · 构建”.
+After CI passes, branch into TWO independently drawn lanes, with clearly separated arrows:
+ORANGE lane “GitHub 托管 Runner / Next.js → out/” → “Wrangler + Cloudflare Token” → “Cloudflare Workers / 更新前端”.
+PURPLE lane “GitHub 托管 Runner / Lambda ZIP + SHA256” → “Artifact” → “专用 EC2 Runner / 下载并校验” → “Lambda / 更新代码”.
+Illustrate EC2 runner as a tiny delivery robot/server, and explicitly separate it from the developer and the bastion.
+Small vault caption “Cloudflare Token 存 GitHub Secrets”.
+AWS lane caption “EC2 实例角色：仅指定 Lambda 代码更新，无长期 AWS 密钥”.
+Small helper arrow “管理员 → Session Manager → Runner”; note “无 SSH 入站；Runner 不直连数据库”.
+Short caption “GitHub 负责构建；专用 EC2 只负责部署。”
+Do NOT draw OIDC or AWS access keys. Do NOT route CI through the business NAT.
+
+Bottom elegant illustrated legend strip:
+“绿色：业务请求 / 橙色：主动出网 / 蓝色：运维 / 紫色：发布 / 虚线：辅助关系”
+Footer “同一套系统，四条清晰链路。Android 已完成开发与本地模拟器数据验证。”
+Tiny cost reminder “NAT、RDS、EC2、磁盘与公网 IPv4 会消耗额度，演示后按计划清理。”
+Prioritize beauty AND architectural accuracy. Complete nodes, readable Chinese, unmistakable arrow direction. Comic expressive visual style, not a flat vector flowchart.

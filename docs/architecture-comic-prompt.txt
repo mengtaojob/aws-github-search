@@ -1,0 +1,60 @@
+Use case: infographic-diagram + scientific-educational.
+Create one polished high-resolution landscape Chinese comic-style SYSTEM ARCHITECTURE POSTER for the student's ACTUAL OctoShelf AWS homework project. Aim 3840x2160, full image with generous margins, clear readable Simplified Chinese lettering. The user prioritizes completeness, correctness and easy-to-follow arrow directions. White/cream background, black ink comic outlines, friendly small student/engineer characters, professional AWS/Cloudflare/GitHub-inspired pictograms, flat pastel color coding. This is an educational technical diagram, not an imaginary mockup. Keep text sharp, large, short and correct. Avoid clutter, tiny text, excessive speech bubbles. Do not include any account IDs, access tokens, passwords, instance IDs, long URLs, or QR codes.
+
+TITLE exactly: “OctoShelf 作业系统架构全景图”
+Subtitle: “Cloudflare 前端 × AWS 后端 × PostgreSQL × GitHub Actions”
+Top-right small badge: “按实际部署绘制 · Android 已通过本地模拟器与真实 API 验证”
+Organize into FOUR numbered comic panels, two by two. Panel headers large. Four panels are different views of THE SAME resources, not four independent deployments. Add small footer “四个分区展示同一套系统：业务、出网、运维、发布。”
+
+PANEL 1 (top left, green header): “① 用户访问 · 从页面到数据库”
+Arrange a clear primary horizontal chain, with distinct numbered arrows:
+User browser as the starting point, “浏览器”, receives static pages from a separate orange Cloudflare card labeled “Cloudflare Workers / Next.js 静态前端 / 全球 CDN”. Arrow from Cloudflare toward browser labeled “下载页面、JS、CSS”. Then from BROWSER directly to “API Gateway / HTTPS 入口”, arrow labeled “HTTPS + 项目访问令牌”. Do NOT draw a Cloudflare backend proxy between browser and API; Cloudflare serves static assets ONLY.
+API Gateway → “AWS Lambda / Node.js + Hono / 校验令牌、处理业务” arrow labeled “调用函数”.
+Lambda → “RDS PostgreSQL / github_search / github_users” arrow labeled “内网 TCP 5432 + TLS / IAM 数据库认证”.
+Dashed blue grouping enclosing Lambda and RDS, marked “同一个 AWS VPC · 悉尼 ap-southeast-2”. API Gateway outside this VPC group. The Lambda uses private app subnets. RDS is a conventional instance db.t4g.micro, NOT Aurora or Serverless. RDS annotation “无公网地址”.
+A small AWS Secrets Manager card, outside VPC near Lambda, connected to Lambda by dotted arrow “读取项目访问令牌（经 NAT）”. Do not show a database password in Secrets Manager.
+A small phone card “Android App / 收藏展示、详情、刷新 / 已通过本地模拟器与真实 API 验证” with dotted arrow DIRECTLY to API Gateway labeled “HTTPS + 同一项目令牌”; solid verified-status border. Small phone caption “令牌存 SecureStore”.
+Small capability strip within panel: “搜索 GitHub · 收藏增删改查 · 备注 · 标签”. Browser token small note “浏览器令牌：sessionStorage”. Small response return arrows or a single gray note “响应沿请求链路返回：JSON → 页面”.
+
+PANEL 2 (top right, orange header): “② Lambda 出网 · NAT 与 IGW”
+Simple left-to-right directional chain:
+“Lambda VPC 网卡 / 私有应用子网 A、B” → “公共 NAT Gateway / 公有子网 A” → “IGW / VPC 互联网网关” → “GitHub API / 公网服务”.
+Labels above arrows “主动出网”, then “公网出口”, then “HTTPS 443”.
+Draw this panel's AWS VPC boundary enclosing Lambda private subnets, NAT public subnet and IGW at boundary; GitHub outside. Show two little AZ badges “AZ-a”, “AZ-b” underneath private subnet card, ONE shared NAT. Explicit note “两 AZ 私有子网，共用一个 NAT（课程方案）”.
+A tiny three-row routing table, exact:
+“应用私有子网 | 0.0.0.0/0 → NAT”
+“公有子网 | 0.0.0.0/0 → IGW”
+“VPC 内部访问 | local 路由”
+A distinct green return arrow caption “已建立连接的响应可以返回”.
+Red blocked incoming arrow from Internet toward private Lambda caption “公网不能主动连接私有网卡”.
+Small bulb note “数据库业务访问走内网，不经过 NAT。”
+Another compact note “Secrets Manager 的公网 API 也经 NAT 访问。”
+Do NOT imply IGW alone grants internet access to a VPC-attached Lambda. Single NAT correctly shown in public subnet.
+
+PANEL 3 (bottom left, blue header): “③ 数据库运维 · EC2 跳板机”
+Left-to-right:
+“管理员电脑” → “EC2 跳板机 / Amazon Linux / 公有 IP” → “RDS PostgreSQL / 无公网地址”.
+Arrow computer to bastion “SSH 22 / 仅当前公网 IP /32”.
+Arrow bastion to RDS “内网 5432 + TLS / psql”.
+VPC dashed blue box encloses EC2 and RDS, not administrator computer. Add guard/security shield labeled “数据库 5432 仅允许：Lambda 安全组 + 跳板机安全组”.
+Separate bottom callout “跳板机用于人工运维；Lambda 直接访问数据库，不经过跳板机。”
+An accurate small footnote in this panel: “RDS 使用现有默认子网组；不是独立隔离数据库子网。”
+This is important: do NOT falsely label RDS's existing subnets as isolated or say they have no internet default route. RDS private access is achieved by no public IP + SG restrictions.
+
+PANEL 4 (bottom right, purple header): “④ 自动发布 · GitHub Actions”
+Source-to-split pipeline:
+“开发者 git push main” → “GitHub 仓库” → “CI / 类型检查、单元测试 / PostgreSQL 集成测试 / 构建、浏览器与 Android 检查” → “CI 通过”.
+After success, TWO independent branches:
+Branch A orange “GitHub 托管 Runner / 构建 Next.js → out/” → “Wrangler + Cloudflare API Token” → “Cloudflare Workers / 更新前端”.
+Branch B blue “GitHub 托管 Runner / 构建 Lambda ZIP + SHA256” → “GitHub Artifact” → “专用 EC2 Runner / 下载并校验构建包” → “Lambda UpdateFunctionCode / 更新后端”.
+EC2 Runner tiny notes “实例角色：仅指定 Lambda 代码更新 / 无数据库访问权限”. A small administrator+SSM side arrow “管理员 → Session Manager → Runner” marked “无入站端口 · 无需 SSH”.
+Token vault small caption “Cloudflare Token 存 GitHub Secrets”.
+Distinguish AWS IAM instance role from Cloudflare Token; no OIDC, no permanent AWS Access Key. One short statement “AWS 部署用 EC2 实例角色，无需长期 AWS 密钥。”
+Small safety/flow caption “构建与测试在 GitHub；EC2 只负责部署，不直连数据库。”
+One small dashed ancillary card “Android 独立分支开发完成 → 本地模拟器 → 真实 API 数据验证” is OPTIONAL if enough room; preserve primary arrows clarity.
+
+BOTTOM FULL-WIDTH legend/reading guide:
+Green line “业务请求” · Orange line “主动出网” · Blue line “人工运维” · Purple line “代码发布” · Gray dashed line “辅助关系”.
+Progress badges “已验证：网页、Lambda、RDS、跳板机、前端自动发布、后端发布” and “待最终确认：后端自动触发运行记录”.
+Small restrained cost note “NAT、RDS、EC2 与公网 IPv4 会持续消耗额度，演示后按计划清理。”
+Do not add old Aurora Express, AWS S3/CloudFront hosting, RDS Proxy, API Gateway IAM SigV4 auth, a Worker proxy backend, or a claim all homework is complete. Make a beautiful informative Chinese comic architecture diagram whose edges and labels are unambiguous. Prioritize arrows and clean panel hierarchy over decorative character size.

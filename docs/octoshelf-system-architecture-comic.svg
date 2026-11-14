@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3000" height="2620" viewBox="0 0 3000 2620">
+<defs>
+<marker id="203533" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#203533"/></marker>
+<marker id="137d62" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#137d62"/></marker>
+<marker id="d46c1b" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#d46c1b"/></marker>
+<marker id="2366a6" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#2366a6"/></marker>
+<marker id="7652aa" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#7652aa"/></marker>
+<marker id="75847e" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto-start-reverse"><path d="M1 1 L10 6 L1 11 Z" fill="#75847e"/></marker>
+<pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#b9b5a4" opacity=".22"/></pattern></defs>
+<g font-family="Microsoft YaHei, Microsoft YaHei UI, sans-serif">
+<rect x="0" y="0" width="3000" height="2620" rx="0" fill="#fffaf0" stroke="none" stroke-width="3" />
+<rect x="0" y="0" width="3000" height="2620" rx="0" fill="url(#dots)" stroke="none" stroke-width="3" />
+<text x="70" y="108" font-size="78" fill="#203533" font-weight="700" text-anchor="start">OctoShelf 作业系统架构全景图</text>
+<text x="76" y="166" font-size="34" fill="#65776b" font-weight="400" text-anchor="start">Cloudflare 前端 × AWS 后端 × PostgreSQL × GitHub Actions × Android</text>
+<rect x="2210" y="58" width="710" height="55" rx="20" fill="#fff" stroke="#137d62" stroke-width="2" />
+<text x="2565.0" y="96" font-size="28" fill="#137d62" font-weight="700" text-anchor="middle">实际部署版 · Android 模拟器验证通过</text>
+<circle cx="2870" cy="146" r="32" fill="#ffe1b7" stroke="#203533" stroke-width="3"/>
+<path d="M2839 142 Q2828 103 2863 115 L2873 98 L2882 117 Q2910 107 2901 143" fill="none" stroke="#203533" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="2846" y="138" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<rect x="2874" y="138" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<path d="M2867 146 H2874 M2861 161 Q2870 170 2881 159" fill="none" stroke="#203533" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="2828" y="183" width="84" height="46" rx="12" fill="#d46c1b" stroke="#203533" stroke-width="3" />
+<rect x="2826" y="195" width="88" height="46" rx="5" fill="#e8eff1" stroke="#203533" stroke-width="3" />
+<text x="2870" y="228" font-size="23" fill="#d46c1b" font-weight="700" text-anchor="middle">&lt;/&gt;</text>
+<rect x="58" y="230" width="2900" height="920" rx="28" fill="#d7ded3" stroke="none" stroke-width="3" />
+<rect x="50" y="220" width="2900" height="920" rx="28" fill="#f0f8ee" stroke="#203533" stroke-width="4" />
+<rect x="65" y="235" width="2870" height="88" rx="20" fill="#137d62" stroke="#203533" stroke-width="2" />
+<circle cx="117" cy="279" r="33" fill="white" stroke="#203533" stroke-width="3"/>
+<text x="117" y="294" font-size="42" fill="#137d62" font-weight="700" text-anchor="middle">1</text>
+<text x="172" y="296" font-size="45" fill="#fff" font-weight="700" text-anchor="start">用户访问：页面、手机与同一套后端</text>
+<rect x="131" y="358" width="790" height="140" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="125" y="350" width="790" height="140" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="125" y="350" width="12" height="140" rx="8" fill="#d46c1b" stroke="none" stroke-width="3" />
+<text x="155" y="398" font-size="35" fill="#d46c1b" font-weight="700" text-anchor="start">Cloudflare Workers</text>
+<text x="155" y="441" font-size="28" fill="#203533" font-weight="400" text-anchor="start">Next.js 静态导出 out/ · CDN 分发页面、JS、CSS</text>
+<path d="M365 495 V575" fill="none" stroke="#d46c1b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<text x="410" y="545" font-size="29" fill="#d46c1b" font-weight="700" text-anchor="start">① 下载静态资源</text>
+<rect x="131" y="598" width="500" height="155" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="125" y="590" width="500" height="155" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="125" y="590" width="12" height="155" rx="8" fill="#137d62" stroke="none" stroke-width="3" />
+<text x="155" y="638" font-size="35" fill="#137d62" font-weight="700" text-anchor="start">浏览器</text>
+<text x="155" y="681" font-size="28" fill="#203533" font-weight="400" text-anchor="start">搜索、收藏增删改查</text>
+<text x="155" y="720" font-size="28" fill="#203533" font-weight="400" text-anchor="start">备注和标签 · 令牌存 sessionStorage</text>
+<path d="M635 665 H890" fill="none" stroke="#137d62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#137d62)"/>
+<text x="650" y="590" font-size="27" fill="#137d62" font-weight="700" text-anchor="start">② HTTPS JSON</text>
+<text x="650" y="627" font-size="27" fill="#137d62" font-weight="700" text-anchor="start">+ Bearer 项目令牌</text>
+<rect x="906" y="598" width="370" height="155" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="900" y="590" width="370" height="155" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="900" y="590" width="12" height="155" rx="8" fill="#7652aa" stroke="none" stroke-width="3" />
+<text x="930" y="638" font-size="35" fill="#7652aa" font-weight="700" text-anchor="start">API Gateway</text>
+<text x="930" y="681" font-size="28" fill="#203533" font-weight="400" text-anchor="start">公网 HTTPS 入口</text>
+<text x="930" y="720" font-size="28" fill="#203533" font-weight="400" text-anchor="start">转发请求、调用函数</text>
+<rect x="1410" y="470" width="1465" height="390" rx="24" fill="#eaf2ff" stroke="#2366a6" stroke-width="3" stroke-dasharray="16 10"/>
+<text x="1440" y="520" font-size="36" fill="#2366a6" font-weight="700" text-anchor="start">同一个 AWS VPC · 悉尼 ap-southeast-2</text>
+<path d="M1280 665 H1485" fill="none" stroke="#137d62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#137d62)"/>
+<text x="1285" y="620" font-size="27" fill="#137d62" font-weight="700" text-anchor="start">③ 调用</text>
+<rect x="1506" y="598" width="485" height="155" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1500" y="590" width="485" height="155" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1500" y="590" width="12" height="155" rx="8" fill="#137d62" stroke="none" stroke-width="3" />
+<text x="1530" y="638" font-size="35" fill="#137d62" font-weight="700" text-anchor="start">AWS Lambda</text>
+<text x="1530" y="681" font-size="28" fill="#203533" font-weight="400" text-anchor="start">Node.js + Hono · 校验项目令牌</text>
+<text x="1530" y="720" font-size="28" fill="#203533" font-weight="400" text-anchor="start">处理业务 · 通过 ENI 接入私有子网</text>
+<rect x="2316" y="598" width="515" height="155" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="2310" y="590" width="515" height="155" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="2310" y="590" width="12" height="155" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="2340" y="638" font-size="34" fill="#2366a6" font-weight="700" text-anchor="start">RDS PostgreSQL</text>
+<text x="2340" y="681" font-size="28" fill="#203533" font-weight="400" text-anchor="start">普通实例 db.t4g.micro · 无公网地址</text>
+<text x="2340" y="720" font-size="28" fill="#203533" font-weight="400" text-anchor="start">github_search / github_users</text>
+<path d="M1995 665 H2295" fill="none" stroke="#137d62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#137d62)"/>
+<text x="2010" y="585" font-size="27" fill="#137d62" font-weight="700" text-anchor="start">④ 内网 5432 + TLS</text>
+<text x="2010" y="623" font-size="27" fill="#137d62" font-weight="700" text-anchor="start">IAM 数据库认证</text>
+<text x="1510" y="817" font-size="29" fill="#2366a6" font-weight="400" text-anchor="start">Lambda 私有应用子网 A/B；数据库允许指定安全组访问</text>
+<rect x="131" y="898" width="650" height="145" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="125" y="890" width="650" height="145" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="125" y="890" width="12" height="145" rx="8" fill="#137d62" stroke="none" stroke-width="3" />
+<text x="155" y="938" font-size="35" fill="#137d62" font-weight="700" text-anchor="start">Android App · 已验证</text>
+<text x="155" y="981" font-size="28" fill="#203533" font-weight="400" text-anchor="start">收藏展示、详情、搜索与刷新</text>
+<text x="155" y="1020" font-size="28" fill="#203533" font-weight="400" text-anchor="start">本地模拟器调用真实 API · 令牌存 SecureStore</text>
+<path d="M785 965 H835 V715 H890" fill="none" stroke="#137d62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#137d62)"/>
+<text x="850" y="840" font-size="25" fill="#137d62" font-weight="400" text-anchor="start">同一 API</text>
+<text x="850" y="876" font-size="25" fill="#137d62" font-weight="400" text-anchor="start">同一项目令牌</text>
+<rect x="1506" y="928" width="800" height="110" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1500" y="920" width="800" height="110" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1500" y="920" width="12" height="110" rx="8" fill="#d46c1b" stroke="none" stroke-width="3" />
+<text x="1530" y="968" font-size="32" fill="#d46c1b" font-weight="700" text-anchor="start">AWS Secrets Manager</text>
+<text x="1530" y="1011" font-size="28" fill="#203533" font-weight="400" text-anchor="start">保存项目 API 令牌；Lambda 启动时读取</text>
+<path d="M1745 910 V875 H1375 V765 H1530" fill="none" stroke="#d46c1b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="13 10" marker-end="url(#d46c1b)"/>
+<text x="1890" y="900" font-size="26" fill="#d46c1b" font-weight="400" text-anchor="start">辅助读取经 NAT</text>
+<text x="990" y="1090" font-size="31" fill="#137d62" font-weight="700" text-anchor="start">响应：JSON 沿请求链路返回；浏览器来源由后端 CORS 校验</text>
+<text x="125" y="1090" font-size="29" fill="#203533" font-weight="700" text-anchor="start">CF 只托管静态前端，不代理业务 API。</text>
+<circle cx="1150" cy="395" r="32" fill="#ffe1b7" stroke="#203533" stroke-width="3"/>
+<path d="M1119 391 Q1108 352 1143 364 L1153 347 L1162 366 Q1190 356 1181 392" fill="none" stroke="#203533" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1126" y="387" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<rect x="1154" y="387" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<path d="M1147 395 H1154 M1141 410 Q1150 419 1161 408" fill="none" stroke="#203533" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1108" y="432" width="84" height="46" rx="12" fill="#137d62" stroke="#203533" stroke-width="3" />
+<rect x="1106" y="444" width="88" height="46" rx="5" fill="#e8eff1" stroke="#203533" stroke-width="3" />
+<text x="1150" y="477" font-size="23" fill="#137d62" font-weight="700" text-anchor="middle">&lt;/&gt;</text>
+<rect x="950" y="500" width="400" height="55" rx="20" fill="#fff" stroke="#137d62" stroke-width="2" />
+<text x="1150.0" y="538" font-size="28" fill="#137d62" font-weight="700" text-anchor="middle">两端共用同一套后端！</text>
+<rect x="58" y="1190" width="2900" height="475" rx="28" fill="#d7ded3" stroke="none" stroke-width="3" />
+<rect x="50" y="1180" width="2900" height="475" rx="28" fill="#fff3e6" stroke="#203533" stroke-width="4" />
+<rect x="65" y="1195" width="2870" height="88" rx="20" fill="#d46c1b" stroke="#203533" stroke-width="2" />
+<circle cx="117" cy="1239" r="33" fill="white" stroke="#203533" stroke-width="3"/>
+<text x="117" y="1254" font-size="42" fill="#d46c1b" font-weight="700" text-anchor="middle">2</text>
+<text x="172" y="1256" font-size="45" fill="#fff" font-weight="700" text-anchor="start">Lambda 主动出网：私有子网 → NAT → IGW → GitHub</text>
+<rect x="131" y="1328" width="520" height="140" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="125" y="1320" width="520" height="140" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="125" y="1320" width="12" height="140" rx="8" fill="#137d62" stroke="none" stroke-width="3" />
+<text x="155" y="1368" font-size="35" fill="#137d62" font-weight="700" text-anchor="start">Lambda VPC 网卡</text>
+<text x="155" y="1411" font-size="28" fill="#203533" font-weight="400" text-anchor="start">私有应用子网 A/B · 跨两个 AZ</text>
+<rect x="886" y="1328" width="460" height="140" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="880" y="1320" width="460" height="140" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="880" y="1320" width="12" height="140" rx="8" fill="#d46c1b" stroke="none" stroke-width="3" />
+<text x="910" y="1368" font-size="35" fill="#d46c1b" font-weight="700" text-anchor="start">公共 NAT Gateway</text>
+<text x="910" y="1411" font-size="28" fill="#203533" font-weight="400" text-anchor="start">公有子网 A · 共用一个 NAT</text>
+<rect x="1636" y="1328" width="390" height="140" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1630" y="1320" width="390" height="140" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1630" y="1320" width="12" height="140" rx="8" fill="#7652aa" stroke="none" stroke-width="3" />
+<text x="1660" y="1368" font-size="35" fill="#7652aa" font-weight="700" text-anchor="start">IGW</text>
+<text x="1660" y="1411" font-size="28" fill="#203533" font-weight="400" text-anchor="start">挂载在 VPC 上的互联网网关</text>
+<rect x="2366" y="1328" width="500" height="140" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="2360" y="1320" width="500" height="140" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="2360" y="1320" width="12" height="140" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="2390" y="1368" font-size="35" fill="#2366a6" font-weight="700" text-anchor="start">GitHub API / 公网</text>
+<text x="2390" y="1411" font-size="28" fill="#203533" font-weight="400" text-anchor="start">搜索用户、读取开发者资料</text>
+<path d="M655 1388 H865" fill="none" stroke="#d46c1b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<text x="686" y="1350" font-size="28" fill="#d46c1b" font-weight="700" text-anchor="start">主动出网</text>
+<path d="M1350 1388 H1615" fill="none" stroke="#d46c1b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<text x="1385" y="1350" font-size="28" fill="#d46c1b" font-weight="700" text-anchor="start">公网出口</text>
+<path d="M2030 1388 H2345" fill="none" stroke="#d46c1b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<text x="2090" y="1350" font-size="28" fill="#d46c1b" font-weight="700" text-anchor="start">HTTPS 443</text>
+<rect x="125" y="1503" width="790" height="55" rx="20" fill="#fff" stroke="#d46c1b" stroke-width="2" />
+<text x="520.0" y="1541" font-size="29" fill="#d46c1b" font-weight="700" text-anchor="middle">私有子网：0.0.0.0/0 → NAT</text>
+<rect x="950" y="1503" width="790" height="55" rx="20" fill="#fff" stroke="#d46c1b" stroke-width="2" />
+<text x="1345.0" y="1541" font-size="29" fill="#d46c1b" font-weight="700" text-anchor="middle">公有子网：0.0.0.0/0 → IGW</text>
+<rect x="1775" y="1503" width="1085" height="55" rx="20" fill="#fff" stroke="#2366a6" stroke-width="2" />
+<text x="2317.5" y="1541" font-size="28" fill="#2366a6" font-weight="700" text-anchor="middle">VPC 内部：local 路由；数据库访问不经过 NAT</text>
+<text x="125" y="1610" font-size="29" fill="#203533" font-weight="700" text-anchor="start">两 AZ 共用一个 NAT 是课程成本方案；请求响应可以返回，公网不能主动连接 Lambda 私有网卡。</text>
+<rect x="58" y="1705" width="1350" height="610" rx="28" fill="#d7ded3" stroke="none" stroke-width="3" />
+<rect x="50" y="1695" width="1350" height="610" rx="28" fill="#edf5ff" stroke="#203533" stroke-width="4" />
+<rect x="65" y="1710" width="1320" height="88" rx="20" fill="#2366a6" stroke="#203533" stroke-width="2" />
+<circle cx="117" cy="1754" r="33" fill="white" stroke="#203533" stroke-width="3"/>
+<text x="117" y="1769" font-size="42" fill="#2366a6" font-weight="700" text-anchor="middle">3</text>
+<text x="172" y="1771" font-size="45" fill="#fff" font-weight="700" text-anchor="start">人工运维：通过跳板机管理数据库</text>
+<rect x="116" y="1863" width="305" height="145" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="110" y="1855" width="305" height="145" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="110" y="1855" width="12" height="145" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="140" y="1903" font-size="33" fill="#2366a6" font-weight="700" text-anchor="start">管理员电脑</text>
+<text x="140" y="1946" font-size="28" fill="#203533" font-weight="400" text-anchor="start">本机终端</text>
+<text x="140" y="1985" font-size="28" fill="#203533" font-weight="400" text-anchor="start">SSH 私钥登录</text>
+<rect x="571" y="1863" width="350" height="145" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="565" y="1855" width="350" height="145" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="565" y="1855" width="12" height="145" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="595" y="1903" font-size="33" fill="#2366a6" font-weight="700" text-anchor="start">EC2 跳板机</text>
+<text x="595" y="1946" font-size="28" fill="#203533" font-weight="400" text-anchor="start">Amazon Linux</text>
+<text x="595" y="1985" font-size="28" fill="#203533" font-weight="400" text-anchor="start">公有 IP · psql 客户端</text>
+<rect x="1051" y="1863" width="300" height="145" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1045" y="1855" width="300" height="145" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1045" y="1855" width="12" height="145" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="1075" y="1903" font-size="33" fill="#2366a6" font-weight="700" text-anchor="start">RDS 数据库</text>
+<text x="1075" y="1946" font-size="28" fill="#203533" font-weight="400" text-anchor="start">无公网地址</text>
+<text x="1075" y="1985" font-size="28" fill="#203533" font-weight="400" text-anchor="start">与跳板机同 VPC</text>
+<path d="M425 1930 H550" fill="none" stroke="#2366a6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#2366a6)"/>
+<text x="427" y="1818" font-size="24" fill="#2366a6" font-weight="700" text-anchor="start">SSH 22</text>
+<text x="427" y="1849" font-size="24" fill="#2366a6" font-weight="700" text-anchor="start">当前 IP /32</text>
+<path d="M925 1930 H1030" fill="none" stroke="#2366a6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#2366a6)"/>
+<text x="932" y="1818" font-size="23" fill="#2366a6" font-weight="700" text-anchor="start">内网</text>
+<text x="932" y="1849" font-size="23" fill="#2366a6" font-weight="700" text-anchor="start">5432 + TLS</text>
+<rect x="535" y="2030" width="810" height="74" rx="16" fill="#fff" stroke="#2366a6" stroke-width="2" stroke-dasharray="12 8"/>
+<text x="940" y="2078" font-size="30" fill="#2366a6" font-weight="700" text-anchor="middle">跳板机和 RDS 位于同一个 VPC</text>
+<text x="110" y="2164" font-size="27" fill="#203533" font-weight="400" text-anchor="start">数据库 5432：仅允许 Lambda 安全组 + 跳板机安全组。</text>
+<text x="110" y="2208" font-size="27" fill="#203533" font-weight="400" text-anchor="start">业务连接不经过跳板机；跳板机只用于人工运维。</text>
+<text x="110" y="2252" font-size="27" fill="#203533" font-weight="400" text-anchor="start">RDS 使用现有默认子网组，不是独立隔离数据库子网。</text>
+<circle cx="1245" cy="2210" r="32" fill="#ffe1b7" stroke="#203533" stroke-width="3"/>
+<path d="M1214 2206 Q1203 2167 1238 2179 L1248 2162 L1257 2181 Q1285 2171 1276 2207" fill="none" stroke="#203533" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1221" y="2202" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<rect x="1249" y="2202" width="21" height="15" rx="5" fill="#fff" stroke="#203533" stroke-width="2" />
+<path d="M1242 2210 H1249 M1236 2225 Q1245 2234 1256 2223" fill="none" stroke="#203533" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1203" y="2247" width="84" height="46" rx="12" fill="#2366a6" stroke="#203533" stroke-width="3" />
+<rect x="1201" y="2259" width="88" height="46" rx="5" fill="#e8eff1" stroke="#203533" stroke-width="3" />
+<text x="1245" y="2292" font-size="23" fill="#2366a6" font-weight="700" text-anchor="middle">&lt;/&gt;</text>
+<rect x="1458" y="1705" width="1500" height="610" rx="28" fill="#d7ded3" stroke="none" stroke-width="3" />
+<rect x="1450" y="1695" width="1500" height="610" rx="28" fill="#f5effb" stroke="#203533" stroke-width="4" />
+<rect x="1465" y="1710" width="1470" height="88" rx="20" fill="#7652aa" stroke="#203533" stroke-width="2" />
+<circle cx="1517" cy="1754" r="33" fill="white" stroke="#203533" stroke-width="3"/>
+<text x="1517" y="1769" font-size="42" fill="#7652aa" font-weight="700" text-anchor="middle">4</text>
+<text x="1572" y="1771" font-size="45" fill="#fff" font-weight="700" text-anchor="start">自动发布：构建与部署分开执行</text>
+<rect x="1505" y="1810" width="345" height="55" rx="20" fill="#fff" stroke="#7652aa" stroke-width="2" />
+<text x="1677.5" y="1848" font-size="30" fill="#7652aa" font-weight="700" text-anchor="middle">git push main</text>
+<path d="M1860 1838 H1980" fill="none" stroke="#7652aa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#7652aa)"/>
+<rect x="1995" y="1808" width="885" height="63" rx="15" fill="#fff" stroke="#7652aa" stroke-width="2" />
+<text x="2437" y="1850" font-size="27" fill="#7652aa" font-weight="700" text-anchor="middle">GitHub CI：类型、测试、数据库、构建检查通过</text>
+<path d="M2440 1880 V1905 H1770 V1920" fill="none" stroke="#7652aa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#7652aa)"/>
+<rect x="1511" y="1938" width="540" height="115" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1505" y="1930" width="540" height="115" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1505" y="1930" width="12" height="115" rx="8" fill="#d46c1b" stroke="none" stroke-width="3" />
+<text x="1535" y="1978" font-size="31" fill="#d46c1b" font-weight="700" text-anchor="start">GitHub 托管 Runner</text>
+<text x="1535" y="2021" font-size="28" fill="#203533" font-weight="400" text-anchor="start">构建 Next.js → out/ 静态资源</text>
+<path d="M2055 1987 H2220" fill="none" stroke="#d46c1b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<rect x="2241" y="1938" width="645" height="115" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="2235" y="1930" width="645" height="115" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="2235" y="1930" width="12" height="115" rx="8" fill="#d46c1b" stroke="none" stroke-width="3" />
+<text x="2265" y="1978" font-size="30" fill="#d46c1b" font-weight="700" text-anchor="start">Wrangler → Cloudflare Workers</text>
+<text x="2265" y="2021" font-size="28" fill="#203533" font-weight="400" text-anchor="start">Token 存 GitHub Secrets · 更新前端</text>
+<path d="M2440 1905 H2190 V2080 H1770 V2090" fill="none" stroke="#7652aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="13 10" marker-end="url(#7652aa)"/>
+<rect x="1511" y="2108" width="540" height="112" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="1505" y="2100" width="540" height="112" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="1505" y="2100" width="12" height="112" rx="8" fill="#7652aa" stroke="none" stroke-width="3" />
+<text x="1535" y="2148" font-size="31" fill="#7652aa" font-weight="700" text-anchor="start">GitHub 构建 Lambda</text>
+<text x="1535" y="2191" font-size="28" fill="#203533" font-weight="400" text-anchor="start">ZIP + SHA256 → GitHub Artifact</text>
+<path d="M2055 2156 H2130" fill="none" stroke="#7652aa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#7652aa)"/>
+<rect x="2151" y="2108" width="390" height="112" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="2145" y="2100" width="390" height="112" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="2145" y="2100" width="12" height="112" rx="8" fill="#2366a6" stroke="none" stroke-width="3" />
+<text x="2175" y="2148" font-size="29" fill="#2366a6" font-weight="700" text-anchor="start">专用 EC2 Runner</text>
+<text x="2175" y="2191" font-size="28" fill="#203533" font-weight="400" text-anchor="start">下载、校验构建包</text>
+<path d="M2545 2156 H2610" fill="none" stroke="#7652aa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#7652aa)"/>
+<rect x="2631" y="2108" width="255" height="112" rx="20" fill="#dae1d8" stroke="none" stroke-width="3" />
+<rect x="2625" y="2100" width="255" height="112" rx="20" fill="#fff" stroke="#203533" stroke-width="3" />
+<rect x="2625" y="2100" width="12" height="112" rx="8" fill="#137d62" stroke="none" stroke-width="3" />
+<text x="2655" y="2148" font-size="31" fill="#137d62" font-weight="700" text-anchor="start">Lambda</text>
+<text x="2655" y="2191" font-size="28" fill="#203533" font-weight="400" text-anchor="start">更新后端代码</text>
+<text x="1505" y="2254" font-size="25" fill="#2366a6" font-weight="700" text-anchor="start">Runner 用 EC2 实例角色 · 无长期 AWS 密钥 · 无数据库访问权限</text>
+<text x="1505" y="2290" font-size="24" fill="#203533" font-weight="400" text-anchor="start">管理员经 SSM 管理 Runner（无 SSH 入站）；构建任务不占用这台 EC2。</text>
+<rect x="50" y="2345" width="2900" height="220" rx="25" fill="#fffce1" stroke="#203533" stroke-width="3" />
+<text x="90" y="2400" font-size="38" fill="#203533" font-weight="700" text-anchor="start">读图指南</text>
+<path d="M360 2388 H470" fill="none" stroke="#137d62" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#137d62)"/>
+<text x="495" y="2400" font-size="31" fill="#137d62" font-weight="700" text-anchor="start">业务请求</text>
+<path d="M850 2388 H960" fill="none" stroke="#d46c1b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#d46c1b)"/>
+<text x="985" y="2400" font-size="31" fill="#d46c1b" font-weight="700" text-anchor="start">主动出网</text>
+<path d="M1340 2388 H1450" fill="none" stroke="#2366a6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#2366a6)"/>
+<text x="1475" y="2400" font-size="31" fill="#2366a6" font-weight="700" text-anchor="start">人工运维</text>
+<path d="M1830 2388 H1940" fill="none" stroke="#7652aa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#7652aa)"/>
+<text x="1965" y="2400" font-size="31" fill="#7652aa" font-weight="700" text-anchor="start">代码发布</text>
+<text x="90" y="2460" font-size="30" fill="#203533" font-weight="700" text-anchor="start">四个分区展示同一套资源；Android 已在另一分支完成开发，并通过本地模拟器与真实数据调用验证。</text>
+<text x="90" y="2510" font-size="29" fill="#8d571f" font-weight="400" text-anchor="start">注意：NAT、RDS、EC2、磁盘与公网 IPv4 会消耗额度；业务正常不代表可以省略资源清理。</text>
+<text x="90" y="2595" font-size="24" fill="#66766b" font-weight="400" text-anchor="start">基于本项目实际部署与验证记录绘制 · 未将旧 Aurora Express 或 S3/CloudFront 旧方案混入当前架构</text>
+</g></svg>
